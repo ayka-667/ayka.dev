@@ -618,11 +618,6 @@ html{scroll-behavior:smooth}
   50%{transform:scale(1.05);opacity:0.8}
 }
 
-/* Floating elements */
-.floating{
-  animation:float 6s ease-in-out infinite;
-}
-
 .glowing{
   animation:glow 2s ease-in-out infinite;
 }
