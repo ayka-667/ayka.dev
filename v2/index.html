@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+  <title>Ayka.dev</title>
+  <link rel="icon" type="image/png" href="src/img/imp.webp" />
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chillax:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="src/css/style.css" />
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="Ayka — marque">
+        <img src="src/img/imp.webp" alt="Logo Ayka" class="brand-logo" width="44" height="44">
+        <div class="brand-meta">
+          <div class="brand-title">Ayka</div>
+          <div class="brand-sub">Dev · IA · Automatisation</div>
+        </div>
+      </div>
+
+      <nav class="nav" role="navigation" aria-label="Menu principal">
+        <button id="navToggle" class="nav-toggle" aria-expanded="false" aria-controls="navList" aria-label="Ouvrir le menu">
+          <span class="burger" aria-hidden="true"></span>
+        </button>
+
+        <ul id="navList" class="nav-list" role="menubar">
+          <li><a class="btn tri" href="https://www.ayka.dev/guns" target="_blank" rel="noopener noreferrer">Guns.lol</a></li>
+          <li><a class="btn" href="mailto:contact@ayka.dev" target="_blank" rel="noopener noreferrer">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-wrapper" id="home" role="main">
+    <!-- Floating particles -->
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+    
+    <article class="container-card floating" role="article" aria-labelledby="cardTitle">
+      <header class="card-header">
+        <div>
+          <h1 id="cardTitle" class="card-title">Ayka — Portfolio</h1>
+          <p class="card-sub">Développeur · Machine Learning · Automatisation</p>
+        </div>
+
+        <div class="actions">
+          <a class="btn glowing" href="https://github.com/ayka-667" target="_blank" rel="noopener noreferrer">Github</a>
+          <a class="btn secondary" href="https://github.com/ayka-667?tab=repositories">Voir projets</a>
+        </div>
+      </header>
+
+      <div class="card-grid">
+        <div class="card-main">
+          <section id="about" class="card-section">
+            <h2>À propos</h2>
+            <p>Bonjour — je suis Ayka. J'aime créer des scripts d'automatisation, développer des projets d'intelligence artificielle et concevoir des bots discord et sites web simple, rapides et ergonomiques.</p>
+          </section>
+
+          <section id="projects" class="card-section u-spaced">
+            <h2>Projets récents</h2>
+            <div class="projects-list">
+              <article class="project-item" aria-labelledby="p2">
+                <h3 id="p2">SteamTools</h3>
+                <p class="small-muted">SteamTools est un outil qui simule la possession de jeux sur Steam pour permettre leur téléchargement et leur lancement sans achat.</p>
+                <p><a class="link" href="https://steamtools.ayka.dev/" target="_blank" rel="noopener noreferrer">Visiter</a></p>
+              </article>
+
+              <article class="project-item" aria-labelledby="p2">
+                <h3 id="p2">SimpleDocs</h3>
+                <p class="small-muted">Un générateur de documentation moderne et minimaliste en HTML/CSS/JS pur. Transformez vos fichiers Markdown en une documentation élégante avec thème sombre.</p>
+                <p><a class="link" href="https://github.com/ayka-667/SimpleDocs/" target="_blank" rel="noopener noreferrer">Visiter</a></p>
+              </article>
+              
+              <article class="project-item" aria-labelledby="p2">
+                <h3 id="p2">AykaHost</h3>
+                <p class="small-muted">Hébergement performant & gratuit pour tes projets (Node.js/Python/Java) - Panel Pterodactyl, 24/7, sans latence !</p>
+                <p><a class="link" href="https://panel.ayka.dev/" target="_blank" rel="noopener noreferrer">Visiter</a></p>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <aside class="card-side" aria-labelledby="sideTitle">
+          <div class="profile-compact" role="region" aria-labelledby="sideTitle">
+            <img src="src/img/imp.webp" alt="Avatar Ayka" width="80" height="80">
+            <div>
+              <div id="sideTitle" class="name">Ayka</div>
+              <div class="role">Dev · IA · Automatisation</div>
+            </div>
+          </div>
+
+          <div class="card-section">
+            <h3>Contact</h3>
+            <p class="small-muted">Email : <a class="link" href="mailto:contact@ayka.dev" target="_blank" rel="noopener noreferrer">contact@ayka.dev</a></p>
+            <p class="small-muted">Discord : <a class="link" href="https://ayka.dev/discord" target="_blank" rel="noopener noreferrer">Ayka´ 🌺</a></p>
+          </div>
+
+          <div class="card-section">
+            <h3>Compétences</h3>
+            <ul class="skill-list" aria-hidden="false">
+              <li>Python • Automatisation</li>
+              <li>JavaScript • Frontend</li>
+              <li>ML • Data</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="card-footer small-muted" id="contact">
+        <p>© 2026 Ayka — Tous droits réservés</p>
+      </footer>
+    </article>
+  </main>
+
+  <script src="src/js/main.js" defer></script>
+</body>
+</html>
+
+
+
+
+
+
