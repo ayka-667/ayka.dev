@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ayka — Developer & Creator</title>
+
+  <!-- Title animé (vide au départ) -->
+  <title></title>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -220,7 +223,37 @@
   </footer>
 
   <script>
-    // Smooth scroll
+  const base = "Ayka - ";
+  const text = "Developer & Creator";
+
+  let i = 0;
+  let deleting = false;
+
+  function tick() {
+    if (!deleting) {
+      i++;
+      if (i > text.length) {
+        deleting = true;
+        return;
+      }
+    } else {
+      i--;
+      if (i < 0) {
+        deleting = false;
+        i = 0;
+      }
+    }
+
+    document.title = base + text.slice(0, i);
+  }
+
+  document.title = base;
+  setInterval(tick, 200);
+
+
+    // =========================
+    // SMOOTH SCROLL
+    // =========================
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -231,7 +264,9 @@
       });
     });
 
-    // Active nav state
+    // =========================
+    // ACTIVE NAV STATE
+    // =========================
     const sections = document.querySelectorAll('section[id]');
     const navItems = document.querySelectorAll('.nav-item');
 
@@ -252,7 +287,9 @@
       });
     });
 
-    // Animation au scroll pour la section about
+    // =========================
+    // OBSERVER ANIMATIONS
+    // =========================
     const observerOptions = {
       threshold: 0.2,
       rootMargin: '0px'
