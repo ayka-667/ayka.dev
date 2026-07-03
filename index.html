@@ -1,1 +1,193 @@
-<meta http-equiv="refresh" content="0;url=https://guns.lol/six-seven">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ayka.dev</title>
+<style>
+  :root{
+    --clr-bg-dark:#2c2c2c;
+    --clr-bg-light:#383838;
+    --clr-primary:#25a9d8;
+    --clr-primary-dark:#1c8ab5;
+    --clr-text:#e0e0e0;
+    --clr-muted:#b0b0b0;
+    --clr-card-bg:rgba(255,255,255,.04);
+    --clr-card-bdr:rgba(255,255,255,.08);
+    --clr-warn-bg:#ff6e40;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,var(--clr-bg-dark),var(--clr-bg-light));
+    color:var(--clr-text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  /* --- Challenge PrumaProxy --- */
+  #gate{
+    width:100%;
+    max-width:460px;
+    background:rgba(0,0,0,.32);
+    border-radius:8px;
+    padding:2rem;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .top{display:flex;align-items:center;gap:1rem;margin-bottom:2rem;}
+  .brand{color:var(--clr-primary);font-size:1.125rem;font-weight:700;}
+  .subtitle{font-size:.9rem;font-weight:500;color:var(--clr-muted);margin-top:.2rem;}
+  h2{font-size:1.15rem;line-height:1.4;font-weight:500;margin-bottom:1rem;}
+  p{font-size:.85rem;line-height:1.45;color:var(--clr-muted);margin-bottom:1rem;}
+
+  .progress-outer{
+    height:8px;
+    background:rgba(255,255,255,.1);
+    border-radius:4px;
+    overflow:hidden;
+    margin:1rem 0;
+  }
+  .progress-inner{
+    height:100%;
+    width:0%;
+    background:var(--clr-primary);
+    transition:width .1s linear;
+  }
+  #status{font-size:.75rem;color:var(--clr-muted);text-align:center;}
+
+  #videoWrap{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:#000;
+  }
+  #videoWrap video{width:100%;height:100%;object-fit:contain;}
+
+  #continueBtn{
+    background:var(--clr-primary);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    padding:.6rem 1.2rem;
+    font-size:.85rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .2s,transform .15s;
+  }
+  #continueBtn:hover{background:var(--clr-primary-dark);transform:translateY(-2px);}
+  #continueBtn:active{transform:translateY(1px);}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="top">
+    <div>
+      <div class="brand">PrumaProxy</div>
+      <div class="subtitle">Vérification en cours…</div>
+    </div>
+  </div>
+  <h2>Cette page vérifie votre navigateur avant de continuer</h2>
+  <p>Un calcul de vérification est en cours d'exécution localement dans votre navigateur (aucune donnée n'est envoyée). Cela prend en général quelques secondes.</p>
+  <div class="progress-outer"><div class="progress-inner" id="bar"></div></div>
+  <div id="status">Initialisation…</div>
+  <button id="continueBtn" style="display:none;margin-top:1rem;width:100%;">Cliquer ici pour continuer</button>
+</div>
+
+<div id="videoWrap">
+  <video id="mainVideo" src="ta-video.mp4" controls autoplay></video>
+</div>
+
+<script>
+(function(){
+  const VISITED_KEY = 'ayka_visited';
+  const REDIRECT_URL = 'https://guns.lol/six-seven';
+
+  const hasVisited = localStorage.getItem(VISITED_KEY);
+
+  if(!hasVisited){
+    localStorage.setItem(VISITED_KEY, '1');
+    window.location.href = REDIRECT_URL;
+    return;
+  }
+
+  const DIFFICULTY = 6;
+  const TIME_LIMIT_MS = 8000;
+
+  async function sha256Hex(msg){
+    const enc = new TextEncoder().encode(msg);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function runChallenge(){
+    const seed = Math.random().toString(36).slice(2);
+    const target = '0'.repeat(DIFFICULTY);
+    const statusEl = document.getElementById('status');
+    const barEl = document.getElementById('bar');
+    const btnEl = document.getElementById('continueBtn');
+
+    let nonce = 0;
+    let found = false;
+    let timedOut = false;
+    const startTime = performance.now();
+    const estimatedMax = Math.pow(16, DIFFICULTY);
+
+    while(!found && !timedOut){
+      const hash = await sha256Hex(seed + nonce);
+      if(hash.startsWith(target)){
+        found = true;
+        break;
+      }
+      nonce++;
+
+      const elapsed = performance.now() - startTime;
+
+      if(elapsed >= TIME_LIMIT_MS){
+        timedOut = true;
+        break;
+      }
+
+      if(nonce % 200 === 0){
+        const progress = Math.min(95, (elapsed / TIME_LIMIT_MS) * 100);
+        barEl.style.width = progress + '%';
+        statusEl.textContent = `Vérification… (${nonce} itérations, ${(elapsed/1000).toFixed(1)}s)`;
+        await new Promise(r => setTimeout(r, 0));
+      }
+    }
+
+    if(found){
+      barEl.style.width = '100%';
+      statusEl.textContent = 'Vérification réussie';
+      setTimeout(showVideo, 400);
+    } else {
+      barEl.style.width = '100%';
+      statusEl.textContent = "Vérification plus longue que prévu.";
+      btnEl.style.display = 'block';
+      btnEl.addEventListener('click', showVideo);
+    }
+  }
+
+  function showVideo(){
+    const gate = document.getElementById('gate');
+    const videoWrap = document.getElementById('videoWrap');
+    const video = document.getElementById('mainVideo');
+
+    gate.style.display = 'none';
+    videoWrap.style.display = 'block';
+
+    if(videoWrap.requestFullscreen){
+      videoWrap.requestFullscreen().catch(()=>{});
+    }
+    video.play().catch(()=>{});
+  }
+
+  window.addEventListener('DOMContentLoaded', runChallenge);
+})();
+</script>
+
+</body>
+</html>
