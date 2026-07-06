@@ -102,17 +102,6 @@
 
 <script>
 (function(){
-  const VISITED_KEY = 'ayka_visited';
-  const REDIRECT_URL = 'https://guns.lol/six-seven';
-
-  const hasVisited = localStorage.getItem(VISITED_KEY);
-
-  if(!hasVisited){
-    localStorage.setItem(VISITED_KEY, '1');
-    window.location.href = REDIRECT_URL;
-    return;
-  }
-
   const DIFFICULTY = 6;
   const TIME_LIMIT_MS = 8000;
 
