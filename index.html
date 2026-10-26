@@ -34,8 +34,8 @@ body{
 	align-items:center;
 	justify-content:center;
 
-	background:#000;
-	color:white;
+	/* Transparent pour voir la vidéo */
+	background:transparent;
 
 	cursor:pointer;
 
@@ -51,15 +51,41 @@ body{
 #enter-text{
 	font-family:"Lucida Console", monospace;
 	font-size:16px;
-	color:#aaa;
 
-	transition:color .25s, text-shadow .25s;
+	/* Même effet RGB que la bannière */
+	background:linear-gradient(
+		90deg,
+		#7ee787,
+		#79c0ff,
+		#d2a8ff,
+		#ff7b72,
+		#7ee787
+	);
+
+	background-size:300% 100%;
+
+	-webkit-background-clip:text;
+	background-clip:text;
+
+	color:transparent;
+
+	animation:hue 8s linear infinite;
+
+	filter:drop-shadow(
+		0 0 6px rgba(121,192,255,.35)
+	);
+
+	transition:transform .25s, filter .25s;
 }
 
 #enter-screen:hover #enter-text{
-	color:white;
-	text-shadow:0 0 10px rgba(121,192,255,.6);
+	transform:scale(1.05);
+
+	filter:drop-shadow(
+		0 0 12px rgba(121,192,255,.7)
+	);
 }
+
 
 /* =========================
    VIDEO BACKGROUND
@@ -67,6 +93,7 @@ body{
 
 #background-video{
 	position:fixed;
+
 	top:-20px;
 	left:-20px;
 
@@ -75,6 +102,7 @@ body{
 
 	object-fit:cover;
 
+	/* Flou */
 	filter:blur(8px);
 
 	pointer-events:none;
@@ -82,6 +110,7 @@ body{
 	z-index:-2;
 }
 
+/* Couche sombre légère */
 #video-overlay{
 	position:fixed;
 	inset:0;
@@ -92,6 +121,7 @@ body{
 
 	z-index:-1;
 }
+
 
 /* =========================
    TON CSS ORIGINAL
@@ -111,7 +141,12 @@ a::after{
 	right:0;
 	bottom:-2px;
 	height:1px;
-	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff);
+	background:linear-gradient(
+		90deg,
+		#7ee787,
+		#79c0ff,
+		#d2a8ff
+	);
 	transform:scaleX(0);
 	transition:transform .3s;
 }
@@ -143,13 +178,28 @@ pre#banner{
 	line-height:11px;
 	margin:0 auto;
 	white-space:pre;
-	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff,#ff7b72,#7ee787);
+
+	background:linear-gradient(
+		90deg,
+		#7ee787,
+		#79c0ff,
+		#d2a8ff,
+		#ff7b72,
+		#7ee787
+	);
+
 	background-size:300% 100%;
+
 	-webkit-background-clip:text;
 	background-clip:text;
+
 	color:transparent;
+
 	animation:hue 8s linear infinite;
-	filter:drop-shadow(0 0 6px rgba(121,192,255,.25));
+
+	filter:drop-shadow(
+		0 0 6px rgba(121,192,255,.25)
+	);
 }
 
 @keyframes hue{
@@ -260,40 +310,87 @@ li{
 
 
 <!-- =========================
-     TON CONTENU
+     TON CONTENU ORIGINAL
      ========================= -->
 
 <pre id="banner" aria-label="AYKA.DEV"></pre>
 
-<p class="tagline"><i id="tag"></i><span class="cursor">_</span></p>
+<p class="tagline">
+	<i id="tag"></i>
+	<span class="cursor">_</span>
+</p>
 
 <div class="fade">
 <p><span class="green">$</span> whoami</p>
 <!-- TODO: your intro -->
-<p>Ayka — developer. I like building simple tools that do one thing, and do it well.</p>
+<p>
+	Ayka — developer. I like building simple tools that do one thing, and do it well.
+</p>
 </div>
 
 <div class="fade">
 <h3>Projects</h3>
+
 <ul>
-	<li><a href="https://www.steamtools.app" target="_blank" rel="noopener">steamtools.app</a> <span class="dim">— powerful AIO software for Steam: manifest provider, Lua files, game fixes and portable builds, all in one</span></li>
+	<li>
+		<a
+			href="https://www.steamtools.app"
+			target="_blank"
+			rel="noopener"
+		>
+			steamtools.app
+		</a>
+
+		<span class="dim">
+			— powerful AIO software for Steam: manifest provider,
+			Lua files, game fixes and portable builds, all in one
+		</span>
+	</li>
 </ul>
 </div>
 
 <div class="fade">
 <h3>Contact</h3>
-<p><a href="mailto:contact@ayka.dev">contact@ayka.dev</a></p>
+
 <p>
-	<a href="https://github.com/ayka-667/" target="_blank" rel="noopener">github</a> ·
-	<a href="https://discord.com/users/1198196468272603196" target="_blank" rel="noopener">discord</a> ·
-	<a href="https://guns.lol/ayka" target="_blank" rel="noopener">guns.lol</a>
+	<a href="mailto:contact@ayka.dev">
+		contact@ayka.dev
+	</a>
+</p>
+
+<p>
+	<a
+		href="https://github.com/ayka-667/"
+		target="_blank"
+		rel="noopener"
+	>
+		github
+	</a>
+	·
+	<a
+		href="https://discord.com/users/1198196468272603196"
+		target="_blank"
+		rel="noopener"
+	>
+		discord
+	</a>
+	·
+	<a
+		href="https://guns.lol/ayka"
+		target="_blank"
+		rel="noopener"
+	>
+		guns.lol
+	</a>
 </p>
 </div>
 
 
 <script>
 
-var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+var reduce = matchMedia(
+	"(prefers-reduced-motion: reduce)"
+).matches;
 
 
 /* =========================
@@ -303,14 +400,25 @@ var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 var enterScreen = document.getElementById("enter-screen");
 var music = document.getElementById("music");
 
+/*
+ * La vidéo démarre immédiatement,
+ * mais elle reste complètement muette.
+ *
+ * Le son de la page vient uniquement
+ * de videoplayback.m4a.
+ */
+
 enterScreen.addEventListener("click", function(){
 
-	/* Lance la musique après le clic */
+	/* Autorisation de lecture audio après interaction */
 	music.play().catch(function(error){
-		console.log("Impossible de lancer la musique :", error);
+		console.log(
+			"Impossible de lancer la musique :",
+			error
+		);
 	});
 
-	/* Fait disparaître l'écran */
+	/* Fade out du Click to Enter */
 	enterScreen.classList.add("hidden");
 
 });
@@ -321,18 +429,74 @@ enterScreen.addEventListener("click", function(){
    ========================= */
 
 var L = {
-'A':["╔═══════╗","║  ╔═╗  ║","║  ╚═╝  ║","║  ╔═╗  ║","║  ║░║  ║","╚══╝░╚══╝"],
-'Y':["╔══╗░╔══╗","║  ║░║  ║","║  ╚═╝  ║","╚══╗ ╔══╝","░░░║ ║░░░","░░░╚═╝░░░"],
-'K':["╔══╗░╔══╗","║  ║╔╝ ╔╝","║  ╚╝ ╔╝░","║  ╔╗ ╚╗░","║  ║╚╗ ╚╗","╚══╝░╚══╝"],
-'.':["░░░░","░░░░","░░░░","░░░░","╔══╗","╚══╝"],
-'D':["╔══════╗░","║  ╔═╗ ╚╗","║  ║░║  ║","║  ║░║  ║","║  ╚═╝ ╔╝","╚══════╝░"],
-'E':["╔═══════╗","║  ╔════╝","║  ╚══╗░░","║  ╔══╝░░","║  ╚════╗","╚═══════╝"],
-'V':["╔══╗░╔══╗","║  ║░║  ║","║  ║░║  ║","╚╗ ╚═╝ ╔╝","░╚╗   ╔╝░","░░╚═══╝░░"]
+'A':[
+	"╔═══════╗",
+	"║  ╔═╗  ║",
+	"║  ╚═╝  ║",
+	"║  ╔═╗  ║",
+	"║  ║░║  ║",
+	"╚══╝░╚══╝"
+],
+
+'Y':[
+	"╔══╗░╔══╗",
+	"║  ║░║  ║",
+	"║  ╚═╝  ║",
+	"╚══╗ ╔══╝",
+	"░░░║ ║░░░",
+	"░░░╚═╝░░░"
+],
+
+'K':[
+	"╔══╗░╔══╗",
+	"║  ║╔╝ ╔╝",
+	"║  ╚╝ ╔╝░",
+	"║  ╔╗ ╚╗░",
+	"║  ║╚╗ ╚╗",
+	"╚══╝░╚══╝"
+],
+
+'.':[
+	"░░░░",
+	"░░░░",
+	"░░░░",
+	"░░░░",
+	"╔══╗",
+	"╚══╝"
+],
+
+'D':[
+	"╔══════╗░",
+	"║  ╔═╗ ╚╗",
+	"║  ║░║  ║",
+	"║  ║░║  ║",
+	"║  ╚═╝ ╔╝",
+	"╚══════╝░"
+],
+
+'E':[
+	"╔═══════╗",
+	"║  ╔════╝",
+	"║  ╚══╗░░",
+	"║  ╔══╝░░",
+	"║  ╚════╗",
+	"╚═══════╝"
+],
+
+'V':[
+	"╔══╗░╔══╗",
+	"║  ║░║  ║",
+	"║  ║░║  ║",
+	"╚╗ ╚═╝ ╔╝",
+	"░╚╗   ╔╝░",
+	"░░╚═══╝░░"
+]
 };
 
 var rows = [];
 
-for (var i = 0; i < 6; i++)
+for (var i = 0; i < 6; i++){
+
 	rows.push(
 		"░" +
 		"AYKA.DEV".split("").map(function(c){
@@ -341,45 +505,77 @@ for (var i = 0; i < 6; i++)
 		"░"
 	);
 
+}
+
 var W = rows[0].length;
 
 rows.unshift("░".repeat(W));
 rows.push("░".repeat(W));
 
 var pre = document.getElementById("banner");
-var shades = [" ","░","░","▒","▓","█","▓","▒","░","░"];
+
+var shades = [
+	" ",
+	"░",
+	"░",
+	"▒",
+	"▓",
+	"█",
+	"▓",
+	"▒",
+	"░",
+	"░"
+];
 
 function draw(t){
+
 	pre.textContent = rows.map(function(r, y){
-		return r.replace(/░/g, function(_, x){
 
-			var v =
-				Math.sin(
-					x * 0.18 +
-					y * 0.6 -
-					t * 0.002
-				) * 0.5 + 0.5;
+		return r.replace(
+			/░/g,
+			function(_, x){
 
-			return shades[
-				Math.floor(v * (shades.length - 1))
-			];
-		});
+				var v =
+					Math.sin(
+						x * 0.18 +
+						y * 0.6 -
+						t * 0.002
+					) * 0.5 + 0.5;
+
+				return shades[
+					Math.floor(
+						v * (shades.length - 1)
+					)
+				];
+
+			}
+		);
+
 	}).join("\n");
+
 }
 
 function fit(){
+
 	pre.style.fontSize = "12px";
 	pre.style.lineHeight = "11px";
 
 	var k = Math.min(
 		1,
-		document.body.clientWidth / pre.scrollWidth
+		document.body.clientWidth /
+		pre.scrollWidth
 	);
 
 	if (k < 1){
-		pre.style.fontSize = 12 * k + "px";
-		pre.style.lineHeight = 11 * k + "px";
+
+		pre.style.fontSize =
+			12 * k + "px";
+
+		pre.style.lineHeight =
+			11 * k + "px";
+
 	}
+
 }
 
 draw(0);
@@ -388,18 +584,22 @@ fit();
 addEventListener("resize", fit);
 
 if (!reduce){
+
 	var last = 0;
 
 	(function loop(t){
 
 		if (t - last > 70){
+
 			draw(t);
 			last = t;
+
 		}
 
 		requestAnimationFrame(loop);
 
 	})(0);
+
 }
 
 
@@ -414,6 +614,7 @@ var tags = [
 ];
 
 var tag = document.getElementById("tag");
+
 var ti = 0;
 var n = 0;
 var del = false;
@@ -425,26 +626,41 @@ var del = false;
 	tag.textContent = s.slice(0, n);
 
 	if (reduce){
+
 		tag.textContent = s;
 		return;
+
 	}
 
 	if (!del && n < s.length){
+
 		n++;
+
 		setTimeout(typeTag, 60);
+
 	}
 	else if (!del){
+
 		del = true;
+
 		setTimeout(typeTag, 2500);
+
 	}
 	else if (n > 0){
+
 		n--;
+
 		setTimeout(typeTag, 25);
+
 	}
 	else{
+
 		del = false;
+
 		ti = (ti + 1) % tags.length;
+
 		setTimeout(typeTag, 400);
+
 	}
 
 })();
@@ -454,28 +670,37 @@ var del = false;
    REVEAL ON SCROLL
    ========================= */
 
-var io = new IntersectionObserver(function(es){
+var io = new IntersectionObserver(
+	function(es){
 
-	es.forEach(function(e){
+		es.forEach(function(e){
 
-		if (e.isIntersecting){
-			e.target.classList.add("in");
-			io.unobserve(e.target);
-		}
+			if (e.isIntersecting){
 
-	});
+				e.target.classList.add("in");
 
-}, {
-	threshold: .2
-});
+				io.unobserve(e.target);
 
-document.querySelectorAll(".fade").forEach(function(el, i){
+			}
 
-	el.style.transitionDelay = (i * 0.12) + "s";
+		});
 
-	io.observe(el);
+	},
+	{
+		threshold: .2
+	}
+);
 
-});
+document.querySelectorAll(".fade").forEach(
+	function(el, i){
+
+		el.style.transitionDelay =
+			(i * 0.12) + "s";
+
+		io.observe(el);
+
+	}
+);
 
 
 /* =========================
@@ -485,7 +710,10 @@ document.querySelectorAll(".fade").forEach(function(el, i){
 var year = document.getElementById("year");
 
 if (year){
-	year.textContent = new Date().getFullYear();
+
+	year.textContent =
+		new Date().getFullYear();
+
 }
 
 </script>
