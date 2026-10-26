@@ -88,6 +88,49 @@ body{
 
 
 /* =========================
+   CACHE LE SITE AVANT LE CLIC
+   ========================= */
+
+/*
+ * Tout ce qui appartient au site est caché
+ * avant que l'utilisateur clique.
+ *
+ * La vidéo, son overlay et le Click to Enter
+ * restent visibles.
+ */
+
+body:not(.entered) > pre,
+body:not(.entered) > .tagline,
+body:not(.entered) > .fade{
+	opacity:0;
+	visibility:hidden;
+	pointer-events:none;
+}
+
+/*
+ * Après le clic, le contenu apparaît doucement.
+ */
+
+body.entered > pre,
+body.entered > .tagline,
+body.entered > .fade{
+	visibility:visible;
+	opacity:1;
+}
+
+body.entered > pre,
+body.entered > .tagline{
+	transition:opacity .9s ease;
+}
+
+body.entered > .fade{
+	transition:
+		opacity .7s ease,
+		transform .7s ease;
+}
+
+
+/* =========================
    VIDEO BACKGROUND
    ========================= */
 
@@ -420,6 +463,11 @@ enterScreen.addEventListener("click", function(){
 			error
 		);
 	});
+
+	/*
+	 * Affiche le site.
+	 */
+	document.body.classList.add("entered");
 
 	/* Fade out du Click to Enter */
 	enterScreen.classList.add("hidden");
