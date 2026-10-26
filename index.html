@@ -1,162 +1,448 @@
-<!DOCTYPE html>
-<html lang="fr">
+```html
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ayka.dev</title>
+<meta name="description" content="ayka.dev — mini portfolio.">
 
-    <title>Vidéo en arrière-plan</title>
+<style>
+body{
+	margin:40px auto;
+	padding:0 16px;
+	max-width:760px;
+	line-height:1.4;
+	font-size:18px;
+	font-family:"Lucida Console", monospace;
+	background-color:transparent;
+	color:white;
+	text-align:center;
+	position:relative;
+	isolation:isolate;
+}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* =========================
+   VIDEO BACKGROUND
+   ========================= */
 
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
+#background-video{
+	position:fixed;
+	top:-20px;
+	left:-20px;
+	width:calc(100% + 40px);
+	height:calc(100% + 40px);
+	object-fit:cover;
 
-        body {
-            background: #000;
-        }
+	/* Flou */
+	filter:blur(8px);
 
-        /* Vidéo d'arrière-plan */
-        .background-video {
-            position: fixed;
+	/* La vidéo ne reçoit aucun clic */
+	pointer-events:none;
 
-            /* On agrandit légèrement la vidéo pour éviter
-               les bords visibles à cause du flou */
-            top: -20px;
-            left: -20px;
+	/* Derrière tout le contenu */
+	z-index:-2;
+}
 
-            width: calc(100% + 40px);
-            height: calc(100% + 40px);
+/* Couche sombre au-dessus de la vidéo */
+#video-overlay{
+	position:fixed;
+	inset:0;
+	background:rgba(0,0,0,.55);
+	pointer-events:none;
+	z-index:-1;
+}
 
-            object-fit: cover;
+/* =========================
+   TON CSS ORIGINAL
+   ========================= */
 
-            /* Désactive le son de la vidéo */
-            pointer-events: none;
+a{
+	color:grey;
+	text-decoration:none;
+	position:relative;
+	transition:color .25s
+}
 
-            /* Effet flou */
-            filter: blur(8px);
+a::after{
+	content:"";
+	position:absolute;
+	left:0;
+	right:0;
+	bottom:-2px;
+	height:1px;
+	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff);
+	transform:scaleX(0);
+	transition:transform .3s;
+}
 
-            z-index: -2;
-        }
+a:hover{
+	color:white;
+	text-shadow:0 0 10px rgba(121,192,255,.6)
+}
 
-        /* Assombrit légèrement l'arrière-plan */
-        .overlay {
-            position: fixed;
-            inset: 0;
+a:hover::after{
+	transform:scaleX(1)
+}
 
-            background: rgba(0, 0, 0, 0.25);
+h1,h2,h3{
+	line-height:1.2
+}
 
-            z-index: -1;
-        }
+h3{
+	margin-top:2.2em
+}
 
-        /* Contenu de la page */
-        .content {
-            position: relative;
+h3::before{
+	content:"# ";
+	color:#444
+}
 
-            width: 100%;
-            height: 100%;
+pre#banner{
+	font-size:12px;
+	line-height:11px;
+	margin:0 auto;
+	white-space:pre;
+	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff,#ff7b72,#7ee787);
+	background-size:300% 100%;
+	-webkit-background-clip:text;
+	background-clip:text;
+	color:transparent;
+	animation:hue 8s linear infinite;
+	filter:drop-shadow(0 0 6px rgba(121,192,255,.25));
+}
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+@keyframes hue{
+	to{
+		background-position:300% 0
+	}
+}
 
-            z-index: 1;
-        }
+.tagline{
+	color:#aaa
+}
 
-        .content h1 {
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 48px;
-            text-align: center;
-        }
-    </style>
+.cursor{
+	color:#7ee787;
+	animation:blink 1s steps(1) infinite
+}
+
+@keyframes blink{
+	50%{
+		opacity:0
+	}
+}
+
+.fade{
+	opacity:0;
+	transform:translateY(12px);
+	transition:opacity .7s,transform .7s
+}
+
+.fade.in{
+	opacity:1;
+	transform:none
+}
+
+.dim{
+	color:grey
+}
+
+.green{
+	color:#7ee787
+}
+
+ul{
+	list-style:none;
+	padding:0
+}
+
+li{
+	margin:.6em 0
+}
+
+@media (max-width:640px){
+	body{
+		font-size:16px
+	}
+}
+
+@media (prefers-reduced-motion:reduce){
+	*{
+		animation:none!important;
+		transition:none!important
+	}
+
+	.fade{
+		opacity:1;
+		transform:none
+	}
+}
+</style>
 </head>
 
 <body>
 
-    <!--
-        VIDÉO D'ARRIÈRE-PLAN
+<!-- =========================
+     VIDEO EN ARRIÈRE-PLAN
+     ========================= -->
 
-        muted = aucun son provenant de vid.mp4
-        autoplay = démarre automatiquement
-        loop = recommence automatiquement
-        playsinline = fonctionne correctement sur mobile
-    -->
-    <video
-        class="background-video"
-        autoplay
-        muted
-        loop
-        playsinline
-    >
-        <source src="vid.mp4" type="video/mp4">
+<video
+	id="background-video"
+	autoplay
+	muted
+	loop
+	playsinline
+	preload="auto"
+>
+	<source src="vid.mp4" type="video/mp4">
+</video>
 
-        Votre navigateur ne supporte pas la lecture vidéo.
-    </video>
+<div id="video-overlay"></div>
 
 
-    <!-- Couche sombre au-dessus de la vidéo -->
-    <div class="overlay"></div>
+<!-- =========================
+     MUSIQUE
+     ========================= -->
+
+<audio id="music" loop preload="auto">
+	<source src="videoplayback.m4a" type="audio/mp4">
+</audio>
 
 
-    <!--
-        MUSIQUE
+<!-- =========================
+     TON CONTENU ORIGINAL
+     ========================= -->
 
-        La musique vient uniquement de ce fichier.
-        Le son de vid.mp4 reste désactivé.
-    -->
-    <audio id="music" loop>
-        <source src="videoplayback.m4a" type="audio/mp4">
+<pre id="banner" aria-label="AYKA.DEV"></pre>
 
-        Votre navigateur ne supporte pas la lecture audio.
-    </audio>
+<p class="tagline"><i id="tag"></i><span class="cursor">_</span></p>
 
+<div class="fade">
+<p><span class="green">$</span> whoami</p>
+<!-- TODO: your intro -->
+<p>Ayka — developer. I like building simple tools that do one thing, and do it well.</p>
+</div>
 
-    <!-- Contenu de votre page -->
-    <main class="content">
-        <h1>Ma page</h1>
-    </main>
+<div class="fade">
+<h3>Projects</h3>
+<ul>
+	<li><a href="https://www.steamtools.app" target="_blank" rel="noopener">steamtools.app</a> <span class="dim">— powerful AIO software for Steam: manifest provider, Lua files, game fixes and portable builds, all in one</span></li>
+</ul>
+</div>
 
-
-    <script>
-        const music = document.getElementById("music");
-
-        /*
-         * Les navigateurs empêchent généralement une musique
-         * de démarrer automatiquement avec le son.
-         *
-         * On essaie d'abord de la lancer automatiquement.
-         */
-        window.addEventListener("load", () => {
-            music.play().catch(() => {
-                /*
-                 * Si le navigateur bloque l'autoplay,
-                 * on attend la première interaction de l'utilisateur.
-                 */
-            });
-        });
+<div class="fade">
+<h3>Contact</h3>
+<p><a href="mailto:contact@ayka.dev">contact@ayka.dev</a></p>
+<p>
+	<a href="https://github.com/ayka-667/" target="_blank" rel="noopener">github</a> ·
+	<a href="https://discord.com/users/1198196468272603196" target="_blank" rel="noopener">discord</a> ·
+	<a href="https://guns.lol/ayka" target="_blank" rel="noopener">guns.lol</a>
+</p>
+</div>
 
 
-        /*
-         * Au premier clic, toucher ou appui sur une touche,
-         * on démarre la musique.
-         */
-        const startMusic = () => {
-            music.play().catch(() => {});
-        };
+<script>
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-        document.addEventListener("click", startMusic, { once: true });
-        document.addEventListener("touchstart", startMusic, { once: true });
-        document.addEventListener("keydown", startMusic, { once: true });
-    </script>
+
+/* =========================
+   VIDEO + MUSIQUE
+   ========================= */
+
+var music = document.getElementById("music");
+
+/*
+ * La vidéo possède "muted", donc son audio
+ * n'est jamais utilisé.
+ *
+ * La musique est dans un <audio> séparé.
+ */
+
+/* Tentative de lecture automatique */
+window.addEventListener("load", function(){
+	music.play().catch(function(){
+		/* Le navigateur peut bloquer l'autoplay */
+	});
+});
+
+/*
+ * Si l'autoplay est bloqué, la musique démarre
+ * dès la première interaction avec la page.
+ */
+function startMusic(){
+	music.play().catch(function(){});
+}
+
+document.addEventListener("click", startMusic, {once:true});
+document.addEventListener("touchstart", startMusic, {once:true});
+document.addEventListener("keydown", startMusic, {once:true});
+
+
+/* =========================
+   BANNER
+   ========================= */
+
+var L = {
+'A':["╔═══════╗","║  ╔═╗  ║","║  ╚═╝  ║","║  ╔═╗  ║","║  ║░║  ║","╚══╝░╚══╝"],
+'Y':["╔══╗░╔══╗","║  ║░║  ║","║  ╚═╝  ║","╚══╗ ╔══╝","░░░║ ║░░░","░░░╚═╝░░░"],
+'K':["╔══╗░╔══╗","║  ║╔╝ ╔╝","║  ╚╝ ╔╝░","║  ╔╗ ╚╗░","║  ║╚╗ ╚╗","╚══╝░╚══╝"],
+'.':["░░░░","░░░░","░░░░","░░░░","╔══╗","╚══╝"],
+'D':["╔══════╗░","║  ╔═╗ ╚╗","║  ║░║  ║","║  ║░║  ║","║  ╚═╝ ╔╝","╚══════╝░"],
+'E':["╔═══════╗","║  ╔════╝","║  ╚══╗░░","║  ╔══╝░░","║  ╚════╗","╚═══════╝"],
+'V':["╔══╗░╔══╗","║  ║░║  ║","║  ║░║  ║","╚╗ ╚═╝ ╔╝","░╚╗   ╔╝░","░░╚═══╝░░"]
+};
+
+var rows = [];
+
+for (var i = 0; i < 6; i++)
+	rows.push(
+		"░" +
+		"AYKA.DEV".split("").map(function(c){
+			return L[c][i];
+		}).join("░") +
+		"░"
+	);
+
+var W = rows[0].length;
+
+rows.unshift("░".repeat(W));
+rows.push("░".repeat(W));
+
+var pre = document.getElementById("banner");
+
+var shades = [" ","░","░","▒","▓","█","▓","▒","░","░"];
+
+function draw(t){
+	pre.textContent = rows.map(function(r, y){
+		return r.replace(/░/g, function(_, x){
+			var v =
+				Math.sin(
+					x * 0.18 +
+					y * 0.6 -
+					t * 0.002
+				) * 0.5 + 0.5;
+
+			return shades[
+				Math.floor(v * (shades.length - 1))
+			];
+		});
+	}).join("\n");
+}
+
+function fit(){
+	pre.style.fontSize = "12px";
+	pre.style.lineHeight = "11px";
+
+	var k = Math.min(
+		1,
+		document.body.clientWidth / pre.scrollWidth
+	);
+
+	if (k < 1){
+		pre.style.fontSize = 12 * k + "px";
+		pre.style.lineHeight = 11 * k + "px";
+	}
+}
+
+draw(0);
+fit();
+
+addEventListener("resize", fit);
+
+if (!reduce){
+	var last = 0;
+
+	(function loop(t){
+		if (t - last > 70){
+			draw(t);
+			last = t;
+		}
+
+		requestAnimationFrame(loop);
+	})(0);
+}
+
+
+/* =========================
+   TYPED TAGLINE
+   ========================= */
+
+var tags = [
+	"i build tools.",
+	"creator of steamtools.app.",
+	"independent developer."
+];
+
+var tag = document.getElementById("tag");
+var ti = 0;
+var n = 0;
+var del = false;
+
+(function typeTag(){
+	var s = tags[ti];
+
+	tag.textContent = s.slice(0, n);
+
+	if (reduce){
+		tag.textContent = s;
+		return;
+	}
+
+	if (!del && n < s.length){
+		n++;
+		setTimeout(typeTag, 60);
+	}
+	else if (!del){
+		del = true;
+		setTimeout(typeTag, 2500);
+	}
+	else if (n > 0){
+		n--;
+		setTimeout(typeTag, 25);
+	}
+	else{
+		del = false;
+		ti = (ti + 1) % tags.length;
+		setTimeout(typeTag, 400);
+	}
+})();
+
+
+/* =========================
+   REVEAL ON SCROLL
+   ========================= */
+
+var io = new IntersectionObserver(function(es){
+	es.forEach(function(e){
+		if (e.isIntersecting){
+			e.target.classList.add("in");
+			io.unobserve(e.target);
+		}
+	});
+}, {
+	threshold: .2
+});
+
+document.querySelectorAll(".fade").forEach(function(el, i){
+	el.style.transitionDelay = (i * 0.12) + "s";
+	io.observe(el);
+});
+
+
+/*
+ * Correction : ton ancien code cherchait un élément
+ * avec id="year", mais il n'existe pas dans ton HTML.
+ *
+ * On vérifie donc qu'il existe avant de l'utiliser.
+ */
+var year = document.getElementById("year");
+
+if (year){
+	year.textContent = new Date().getFullYear();
+}
+</script>
 
 </body>
 </html>
+```
