@@ -17,30 +17,8 @@ body{
 	background-color:transparent;
 	color:white;
 	text-align:center;
+	position:relative;
 	isolation:isolate;
-}
-
-/* =========================
-   BACKGROUND VIDEO
-   ========================= */
-
-#background-video{
-	position:fixed;
-	inset:0;
-	width:100%;
-	height:100%;
-	object-fit:cover;
-	z-index:-3;
-	filter:blur(6px);
-	transform:scale(1.08);
-	will-change:transform;
-}
-
-#video-overlay{
-	position:fixed;
-	inset:0;
-	background:rgba(0,0,0,.15);
-	z-index:-2;
 }
 
 /* =========================
@@ -50,13 +28,18 @@ body{
 #enter-screen{
 	position:fixed;
 	inset:0;
-	z-index:9999;
+	z-index:1000;
+
 	display:flex;
 	align-items:center;
 	justify-content:center;
+
+	/* Transparent pour voir la vidéo */
+	background:transparent;
+
 	cursor:pointer;
-	background:#000;
-	transition:opacity .7s ease, visibility .7s ease;
+
+	transition:opacity .8s ease, visibility .8s ease;
 }
 
 #enter-screen.hidden{
@@ -66,7 +49,10 @@ body{
 }
 
 #enter-text{
-	font-size:18px;
+	font-family:"Lucida Console", monospace;
+	font-size:16px;
+
+	/* Même effet RGB que la bannière */
 	background:linear-gradient(
 		90deg,
 		#7ee787,
@@ -75,34 +61,74 @@ body{
 		#ff7b72,
 		#7ee787
 	);
+
 	background-size:300% 100%;
+
 	-webkit-background-clip:text;
 	background-clip:text;
+
 	color:transparent;
+
 	animation:hue 8s linear infinite;
-	filter:drop-shadow(0 0 6px rgba(121,192,255,.35));
-	transition:transform .25s,filter .25s;
+
+	filter:drop-shadow(
+		0 0 6px rgba(121,192,255,.35)
+	);
+
+	transition:transform .25s, filter .25s;
 }
 
 #enter-screen:hover #enter-text{
-	transform:scale(1.08);
-	filter:drop-shadow(0 0 12px rgba(121,192,255,.65));
+	transform:scale(1.05);
+
+	filter:drop-shadow(
+		0 0 12px rgba(121,192,255,.7)
+	);
 }
+
 
 /* =========================
-   SITE CONTENT
+   VIDEO BACKGROUND
    ========================= */
 
-#site{
-	opacity:0;
-	visibility:hidden;
-	transition:opacity .8s ease;
+#background-video{
+	position:fixed;
+
+	top:-20px;
+	left:-20px;
+
+	width:calc(100% + 40px);
+	height:calc(100% + 40px);
+
+	object-fit:cover;
+
+	/* Flou */
+	filter:blur(8px);
+
+	pointer-events:none;
+
+	z-index:-2;
+
+	/* Évite que le navigateur optimise trop le rendu */
+	will-change:transform;
 }
 
-#site.visible{
-	opacity:1;
-	visibility:visible;
+/* Couche sombre légère */
+#video-overlay{
+	position:fixed;
+	inset:0;
+
+	background:rgba(0,0,0,.55);
+
+	pointer-events:none;
+
+	z-index:-1;
 }
+
+
+/* =========================
+   TON CSS ORIGINAL
+   ========================= */
 
 a{
 	color:grey;
@@ -118,7 +144,12 @@ a::after{
 	right:0;
 	bottom:-2px;
 	height:1px;
-	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff);
+	background:linear-gradient(
+		90deg,
+		#7ee787,
+		#79c0ff,
+		#d2a8ff
+	);
 	transform:scaleX(0);
 	transition:transform .3s;
 }
@@ -150,17 +181,34 @@ pre#banner{
 	line-height:11px;
 	margin:0 auto;
 	white-space:pre;
-	background:linear-gradient(90deg,#7ee787,#79c0ff,#d2a8ff,#ff7b72,#7ee787);
+
+	background:linear-gradient(
+		90deg,
+		#7ee787,
+		#79c0ff,
+		#d2a8ff,
+		#ff7b72,
+		#7ee787
+	);
+
 	background-size:300% 100%;
+
 	-webkit-background-clip:text;
 	background-clip:text;
+
 	color:transparent;
+
 	animation:hue 8s linear infinite;
-	filter:drop-shadow(0 0 6px rgba(121,192,255,.25));
+
+	filter:drop-shadow(
+		0 0 6px rgba(121,192,255,.25)
+	);
 }
 
 @keyframes hue{
-	to{background-position:300% 0}
+	to{
+		background-position:300% 0
+	}
 }
 
 .tagline{
@@ -173,7 +221,9 @@ pre#banner{
 }
 
 @keyframes blink{
-	50%{opacity:0}
+	50%{
+		opacity:0
+	}
 }
 
 .fade{
@@ -205,7 +255,9 @@ li{
 }
 
 @media (max-width:640px){
-	body{font-size:16px}
+	body{
+		font-size:16px
+	}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -224,147 +276,350 @@ li{
 
 <body>
 
-<!-- VIDEO BACKGROUND -->
-<video id="background-video" autoplay muted loop playsinline preload="auto">
+<!-- =========================
+     CLICK TO ENTER
+     ========================= -->
+
+<div id="enter-screen">
+	<div id="enter-text">click to enter</div>
+</div>
+
+
+<!-- =========================
+     VIDEO BACKGROUND
+     ========================= -->
+
+<video
+	id="background-video"
+	autoplay
+	muted
+	loop
+	playsinline
+	preload="auto"
+>
 	<source src="vid.mp4" type="video/mp4">
 </video>
 
 <div id="video-overlay"></div>
 
-<!-- CLICK TO ENTER -->
-<div id="enter-screen">
-	<div id="enter-text">click to enter</div>
-</div>
 
-<!-- SITE -->
-<div id="site">
+<!-- =========================
+     MUSIQUE
+     ========================= -->
+
+<audio id="music" loop preload="auto">
+	<source src="videoplayback.m4a" type="audio/mp4">
+</audio>
+
+
+<!-- =========================
+     TON CONTENU ORIGINAL
+     ========================= -->
 
 <pre id="banner" aria-label="AYKA.DEV"></pre>
-<p class="tagline"><i id="tag"></i><span class="cursor">_</span></p>
+
+<p class="tagline">
+	<i id="tag"></i>
+	<span class="cursor">_</span>
+</p>
 
 <div class="fade">
 <p><span class="green">$</span> whoami</p>
 <!-- TODO: your intro -->
-<p>Ayka — developer. I like building simple tools that do one thing, and do it well.</p>
+<p>
+	Ayka — developer. I like building simple tools that do one thing, and do it well.
+</p>
 </div>
 
 <div class="fade">
 <h3>Projects</h3>
+
 <ul>
-	<li><a href="https://www.steamtools.app" target="_blank" rel="noopener">steamtools.app</a> <span class="dim">— powerful AIO software for Steam: manifest provider, Lua files, game fixes and portable builds, all in one</span></li>
+	<li>
+		<a
+			href="https://www.steamtools.app"
+			target="_blank"
+			rel="noopener"
+		>
+			steamtools.app
+		</a>
+
+		<span class="dim">
+			— powerful AIO software for Steam: manifest provider,
+			Lua files, game fixes and portable builds, all in one
+		</span>
+	</li>
 </ul>
 </div>
 
 <div class="fade">
 <h3>Contact</h3>
-<p><a href="mailto:contact@ayka.dev">contact@ayka.dev</a></p>
+
 <p>
-	<a href="https://github.com/ayka-667/" target="_blank" rel="noopener">github</a> ·
-	<a href="https://discord.com/users/1198196468272603196" target="_blank" rel="noopener">discord</a> ·
-	<a href="https://guns.lol/ayka" target="_blank" rel="noopener">guns.lol</a>
+	<a href="mailto:contact@ayka.dev">
+		contact@ayka.dev
+	</a>
+</p>
+
+<p>
+	<a
+		href="https://github.com/ayka-667/"
+		target="_blank"
+		rel="noopener"
+	>
+		github
+	</a>
+	·
+	<a
+		href="https://discord.com/users/1198196468272603196"
+		target="_blank"
+		rel="noopener"
+	>
+		discord
+	</a>
+	·
+	<a
+		href="https://guns.lol/ayka"
+		target="_blank"
+		rel="noopener"
+	>
+		guns.lol
+	</a>
 </p>
 </div>
 
-</div>
-
-<!-- MUSIC -->
-<audio id="music" loop preload="auto">
-	<source src="videoplayback.m4a" type="audio/mp4">
-</audio>
 
 <script>
-var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+var reduce = matchMedia(
+	"(prefers-reduced-motion: reduce)"
+).matches;
+
+
+/* =========================
+   CLICK TO ENTER + MUSIQUE
+   ========================= */
 
 var enterScreen = document.getElementById("enter-screen");
 var music = document.getElementById("music");
-var site = document.getElementById("site");
-var video = document.getElementById("background-video");
 
-/* =========================
-   CLICK TO ENTER
-   ========================= */
+/*
+ * La vidéo démarre immédiatement,
+ * mais elle reste complètement muette.
+ *
+ * Le son de la page vient uniquement
+ * de videoplayback.m4a.
+ */
 
 enterScreen.addEventListener("click", function(){
-	music.play().catch(function(){});
 
-	site.classList.add("visible");
+	/* Autorisation de lecture audio après interaction */
+	music.play().catch(function(error){
+		console.log(
+			"Impossible de lancer la musique :",
+			error
+		);
+	});
+
+	/* Fade out du Click to Enter */
 	enterScreen.classList.add("hidden");
+
 });
 
+
 /* =========================
-   SMOOTH CHAOTIC VIDEO
+   SMOOTH VIDEO MOVEMENT
    ========================= */
+
+var backgroundVideo =
+	document.getElementById("background-video");
 
 if (!reduce){
 
-	var current = {
-		scale:1.08,
-		x:0,
-		y:0,
-		rotate:0
-	};
+	/*
+	 * Valeurs de départ.
+	 *
+	 * Le scale est volontairement supérieur à 1
+	 * pour éviter de voir les bords pendant les mouvements.
+	 */
+	var videoScale = 1.08;
+	var videoX = 0;
+	var videoY = 0;
+	var videoRotation = 0;
 
-	function random(min,max){
+
+	function randomVideo(min, max){
+
 		return Math.random() * (max - min) + min;
+
 	}
 
-	function nextVideoMove(){
 
-		var next = {
-			/* zoom très lent */
-			scale:random(1.05,1.20),
-
-			/* mouvement léger */
-			x:random(-1.8,1.8),
-			y:random(-1.8,1.8),
-
-			/* rotation presque imperceptible */
-			rotate:random(-1.2,1.2)
-		};
+	function moveVideo(){
 
 		/*
-		 * Durée différente à chaque mouvement.
-		 * Entre ~8 et ~18 secondes.
+		 * Nouvelle destination aléatoire.
+		 *
+		 * Les valeurs restent petites pour que
+		 * le mouvement soit lent et hypnotique.
 		 */
-		var duration = random(8000,18000);
+		videoScale = randomVideo(1.08, 1.22);
 
-		video.style.transition =
-			"transform " + duration + "ms cubic-bezier(.45,.05,.55,.95)";
+		videoX = randomVideo(-1.5, 1.5);
 
-		video.style.transform =
-			"scale(" + next.scale + ")" +
-			" translate(" + next.x + "%," + next.y + "%)" +
-			" rotate(" + next.rotate + "deg)";
+		videoY = randomVideo(-1.5, 1.5);
 
-		current = next;
+		videoRotation = randomVideo(-0.8, 0.8);
 
-		setTimeout(nextVideoMove, duration + random(300,1500));
+
+		/*
+		 * Chaque mouvement a une vitesse différente.
+		 *
+		 * Minimum : 8 secondes
+		 * Maximum : 20 secondes
+		 */
+		var duration = randomVideo(
+			8000,
+			20000
+		);
+
+
+		/*
+		 * Courbe très douce.
+		 *
+		 * Aucun mouvement brutal :
+		 * ça accélère doucement,
+		 * puis ralentit doucement.
+		 */
+		backgroundVideo.style.transition =
+			"transform " +
+			duration +
+			"ms cubic-bezier(.45,.05,.55,.95)";
+
+
+		backgroundVideo.style.transform =
+			"translate(" +
+			videoX +
+			"%," +
+			videoY +
+			"%) " +
+			"scale(" +
+			videoScale +
+			") " +
+			"rotate(" +
+			videoRotation +
+			"deg)";
+
+
+		/*
+		 * On attend la fin du mouvement
+		 * avant d'en choisir un nouveau.
+		 *
+		 * Petit délai aléatoire entre deux
+		 * mouvements pour éviter un rythme régulier.
+		 */
+		setTimeout(
+			moveVideo,
+			duration + randomVideo(500, 2500)
+		);
+
 	}
 
-	/* petit délai avant le premier mouvement */
-	setTimeout(nextVideoMove, 2500);
+
+	/*
+	 * On laisse la vidéo commencer tranquillement
+	 * avant le premier mouvement.
+	 */
+	setTimeout(
+		moveVideo,
+		2000
+	);
+
 }
+
 
 /* =========================
    BANNER
    ========================= */
 
 var L = {
-'A':["╔═══════╗","║  ╔═╗  ║","║  ╚═╝  ║","║  ╔═╗  ║","║  ║░║  ║","╚══╝░╚══╝"],
-'Y':["╔══╗░╔══╗","║  ║░║  ║","║  ╚═╝  ║","╚══╗ ╔══╝","░░░║ ║░░░","░░░╚═╝░░░"],
-'K':["╔══╗░╔══╗","║  ║╔╝ ╔╝","║  ╚╝ ╔╝░","║  ╔╗ ╚╗░","║  ║╚╗ ╚╗","╚══╝░╚══╝"],
-'.':["░░░░","░░░░","░░░░","░░░░","╔══╗","╚══╝"],
-'D':["╔══════╗░","║  ╔═╗ ╚╗","║  ║░║  ║","║  ║░║  ║","║  ╚═╝ ╔╝","╚══════╝░"],
-'E':["╔═══════╗","║  ╔════╝","║  ╚══╗░░","║  ╔══╝░░","║  ╚════╗","╚═══════╝"],
-'V':["╔══╗░╔══╗","║  ║░║  ║","║  ║░║  ║","╚╗ ╚═╝ ╔╝","░╚╗   ╔╝░","░░╚═══╝░░"]
+'A':[
+	"╔═══════╗",
+	"║  ╔═╗  ║",
+	"║  ╚═╝  ║",
+	"║  ╔═╗  ║",
+	"║  ║░║  ║",
+	"╚══╝░╚══╝"
+],
+
+'Y':[
+	"╔══╗░╔══╗",
+	"║  ║░║  ║",
+	"║  ╚═╝  ║",
+	"╚══╗ ╔══╝",
+	"░░░║ ║░░░",
+	"░░░╚═╝░░░"
+],
+
+'K':[
+	"╔══╗░╔══╗",
+	"║  ║╔╝ ╔╝",
+	"║  ╚╝ ╔╝░",
+	"║  ╔╗ ╚╗░",
+	"║  ║╚╗ ╚╗",
+	"╚══╝░╚══╝"
+],
+
+'.':[
+	"░░░░",
+	"░░░░",
+	"░░░░",
+	"░░░░",
+	"╔══╗",
+	"╚══╝"
+],
+
+'D':[
+	"╔══════╗░",
+	"║  ╔═╗ ╚╗",
+	"║  ║░║  ║",
+	"║  ║░║  ║",
+	"║  ╚═╝ ╔╝",
+	"╚══════╝░"
+],
+
+'E':[
+	"╔═══════╗",
+	"║  ╔════╝",
+	"║  ╚══╗░░",
+	"║  ╔══╝░░",
+	"║  ╚════╗",
+	"╚═══════╝"
+],
+
+'V':[
+	"╔══╗░╔══╗",
+	"║  ║░║  ║",
+	"║  ║░║  ║",
+	"╚╗ ╚═╝ ╔╝",
+	"░╚╗   ╔╝░",
+	"░░╚═══╝░░"
+]
 };
 
 var rows = [];
 
-for (var i = 0; i < 6; i++)
-	rows.push("░" + "AYKA.DEV".split("").map(function(c){
-		return L[c][i];
-	}).join("░") + "░");
+for (var i = 0; i < 6; i++){
+
+	rows.push(
+		"░" +
+		"AYKA.DEV".split("").map(function(c){
+			return L[c][i];
+		}).join("░") +
+		"░"
+	);
+
+}
 
 var W = rows[0].length;
 
@@ -372,56 +627,95 @@ rows.unshift("░".repeat(W));
 rows.push("░".repeat(W));
 
 var pre = document.getElementById("banner");
-var shades = [" ","░","░","▒","▓","█","▓","▒","░","░"];
+
+var shades = [
+	" ",
+	"░",
+	"░",
+	"▒",
+	"▓",
+	"█",
+	"▓",
+	"▒",
+	"░",
+	"░"
+];
 
 function draw(t){
-	pre.textContent = rows.map(function(r,y){
-		return r.replace(/░/g,function(_,x){
-			var v = Math.sin(
-				x * .18 +
-				y * .6 -
-				t * .002
-			) * .5 + .5;
 
-			return shades[
-				Math.floor(v * (shades.length - 1))
-			];
-		});
+	pre.textContent = rows.map(function(r, y){
+
+		return r.replace(
+			/░/g,
+			function(_, x){
+
+				var v =
+					Math.sin(
+						x * 0.18 +
+						y * 0.6 -
+						t * 0.002
+					) * 0.5 + 0.5;
+
+				return shades[
+					Math.floor(
+						v * (shades.length - 1)
+					)
+				];
+
+			}
+		);
+
 	}).join("\n");
+
 }
 
 function fit(){
+
 	pre.style.fontSize = "12px";
 	pre.style.lineHeight = "11px";
 
 	var k = Math.min(
 		1,
-		document.body.clientWidth / pre.scrollWidth
+		document.body.clientWidth /
+		pre.scrollWidth
 	);
 
-	if(k < 1){
-		pre.style.fontSize = 12 * k + "px";
-		pre.style.lineHeight = 11 * k + "px";
+	if (k < 1){
+
+		pre.style.fontSize =
+			12 * k + "px";
+
+		pre.style.lineHeight =
+			11 * k + "px";
+
 	}
+
 }
 
 draw(0);
 fit();
 
-addEventListener("resize",fit);
+addEventListener("resize", fit);
 
-if(!reduce){
+if (!reduce){
+
 	var last = 0;
 
 	(function loop(t){
-		if(t-last > 70){
+
+		if (t - last > 70){
+
 			draw(t);
 			last = t;
+
 		}
 
 		requestAnimationFrame(loop);
+
 	})(0);
+
 }
+
 
 /* =========================
    TYPED TAGLINE
@@ -434,59 +728,108 @@ var tags = [
 ];
 
 var tag = document.getElementById("tag");
+
 var ti = 0;
 var n = 0;
 var del = false;
 
 (function typeTag(){
+
 	var s = tags[ti];
 
-	tag.textContent = s.slice(0,n);
+	tag.textContent = s.slice(0, n);
 
-	if(reduce){
+	if (reduce){
+
 		tag.textContent = s;
 		return;
+
 	}
 
-	if(!del && n < s.length){
+	if (!del && n < s.length){
+
 		n++;
-		setTimeout(typeTag,60);
+
+		setTimeout(typeTag, 60);
+
 	}
-	else if(!del){
+	else if (!del){
+
 		del = true;
-		setTimeout(typeTag,2500);
+
+		setTimeout(typeTag, 2500);
+
 	}
-	else if(n > 0){
+	else if (n > 0){
+
 		n--;
-		setTimeout(typeTag,25);
+
+		setTimeout(typeTag, 25);
+
 	}
 	else{
+
 		del = false;
+
 		ti = (ti + 1) % tags.length;
-		setTimeout(typeTag,400);
+
+		setTimeout(typeTag, 400);
+
 	}
+
 })();
+
 
 /* =========================
    REVEAL ON SCROLL
    ========================= */
 
-var io = new IntersectionObserver(function(es){
-	es.forEach(function(e){
-		if(e.isIntersecting){
-			e.target.classList.add("in");
-			io.unobserve(e.target);
-		}
-	});
-},{threshold:.2});
+var io = new IntersectionObserver(
+	function(es){
 
-document.querySelectorAll(".fade").forEach(function(el,i){
-	el.style.transitionDelay = (i * .12) + "s";
-	io.observe(el);
-});
+		es.forEach(function(e){
+
+			if (e.isIntersecting){
+
+				e.target.classList.add("in");
+
+				io.unobserve(e.target);
+
+			}
+
+		});
+
+	},
+	{
+		threshold: .2
+	}
+);
+
+document.querySelectorAll(".fade").forEach(
+	function(el, i){
+
+		el.style.transitionDelay =
+			(i * 0.12) + "s";
+
+		io.observe(el);
+
+	}
+);
+
+
+/* =========================
+   YEAR
+   ========================= */
 
 var year = document.getElementById("year");
-if(year) year.textContent = new Date().getFullYear();
+
+if (year){
+
+	year.textContent =
+		new Date().getFullYear();
+
+}
+
 </script>
 
 </body>
