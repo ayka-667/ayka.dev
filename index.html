@@ -457,12 +457,25 @@ body.revealed #bar{transform:none}
 .lp-head .dp-line{flex:1;height:0;border-top:1px solid var(--line);margin:0 1ch}
 #lp-x{color:var(--dim)}
 #lp-x:hover{color:var(--red)}
-.lp-frame{position:relative;margin:.5em 1.2ch 0;aspect-ratio:16/9;background:#000;border:1px solid #161b22}
+.lp-body{padding:.5em 1.2ch 0}
+.lp-frame{position:relative;aspect-ratio:16/9;background:#000;border:1px solid #161b22;overflow:hidden}
+/* album-art videos ("- Topic") are a square cover inside 16:9: crop the side bars away */
+#lp.cover .lp-body{display:flex;gap:1.4ch;align-items:center;padding-bottom:.6em}
+#lp.cover .lp-frame{flex:none;width:108px;aspect-ratio:1/1}
+#lp.cover .lp-frame iframe{left:-38.89%;width:177.78%}
+#lp.cover .lp-info{padding:0}
 .lp-frame iframe,.lp-frame #lp-yt{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
 #lp-shield{position:absolute;inset:0;z-index:1;cursor:default}
 #lp[data-state="blocked"] #lp-shield{cursor:pointer;background:rgba(0,0,0,.45)}
 #lp[data-state="blocked"] #lp-shield::after{content:"[ ▶ click to start ]";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1ed760;font-weight:700}
-.lp-info{padding:.5em 1.2ch .7em;min-width:0}
+.lp-info{padding:.5em 0 .7em;min-width:0;flex:1}
+.lp-vol{display:flex;align-items:center;gap:.6ch;margin-top:.35em;white-space:nowrap;user-select:none}
+.lp-vol button{color:var(--dim);transition:color .2s}
+.lp-vol button:hover{color:var(--hi)}
+#vol-mute.muted{color:var(--red)}
+#vol-bar{color:#1ed760;cursor:pointer;letter-spacing:-.5px}
+#vol-bar .off{color:#21262d}
+#vol-n{color:var(--dim);min-width:3ch;text-align:right}
 #lp-title{color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lp-state a{color:var(--fg)}
 #lp-state a:hover{color:var(--green)}
@@ -611,8 +624,20 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 
 <div id="lp" hidden role="region" aria-label="Listening along">
 	<div class="lp-head"><span>┌─[ <b class="rgb">listening along</b> ]</span><span class="dp-line"></span><button id="lp-x" type="button" aria-label="Stop listening">[x]</button></div>
-	<div class="lp-frame"><div id="lp-yt"></div><div id="lp-shield" aria-hidden="true"></div></div>
-	<div class="lp-info"><div id="lp-title">—</div><div id="lp-state"></div></div>
+	<div class="lp-body">
+		<div class="lp-frame"><div id="lp-yt"></div><div id="lp-shield" aria-hidden="true"></div></div>
+		<div class="lp-info">
+			<div id="lp-title">—</div>
+			<div id="lp-state"></div>
+			<div class="lp-vol">
+				<button type="button" id="vol-mute" title="mute / unmute">vol</button>
+				<button type="button" id="vol-down" aria-label="volume down">-</button>
+				<span id="vol-bar" role="slider" aria-label="volume" aria-valuemin="0" aria-valuemax="100" tabindex="0"></span>
+				<button type="button" id="vol-up" aria-label="volume up">+</button>
+				<span id="vol-n"></span>
+			</div>
+		</div>
+	</div>
 </div>
 
 <span id="meter" aria-hidden="true" style="position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden"></span>
@@ -2008,7 +2033,7 @@ function currentTrack(p){
 	var a = (p.activities || []).filter(function(x){ return x.type === 2 && x.details; })[0];
 	if (!a) return null;
 	var t = a.timestamps || {};
-	return { title: a.details, artist: a.state || "", start: t.start, end: t.end, app: musicApp(a) };
+	return { title: a.details, artist: a.state || "", start: t.start, end: t.end, app: musicApp(a), ytId: ytIdFrom(a) };
 }
 
 /* Liner puts the artist in the activity name; the app shows up in its "Listen on X" button */
@@ -2020,12 +2045,44 @@ function musicApp(a){
 	return "";
 }
 
+/* Liner (and other YouTube-based players) put the video thumbnail in the artwork: i.ytimg.com/vi/<id>/... */
+function ytIdFrom(a){
+	var as = a.assets || {}, urls = [as.large_image, as.small_image];
+	for (var i = 0; i < urls.length; i++){
+		var m = urls[i] && decodeURIComponent(urls[i]).match(/ytimg\.com\/vi(?:_webp)?\/([\w-]{11})\//);
+		if (m) return m[1];
+	}
+	return null;
+}
+
 function trackKey(t){ return t ? (t.title + "|" + t.artist).toLowerCase() : ""; }
 function ytmSearch(t){ return "https://music.youtube.com/search?q=" + encodeURIComponent(t.title + " " + t.artist); }
+
+function normTxt(s){
+	return (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+		.replace(/[(\[](feat|ft)[^)\]]*[)\]]/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+}
+/* 0 = not this song. the song title must appear as whole words; artists add confidence */
+function matchScore(item, t){
+	var want = normTxt(t.title), title = normTxt(item.title);
+	if (!want) return 0;
+	var sc;
+	if (title === want) sc = 5;
+	else if ((" " + title + " ").indexOf(" " + want + " ") >= 0) sc = 3;
+	else return 0;
+	var hay = " " + normTxt(item.uploaderName) + " " + title + " ";
+	var hasArtist = false, artistHit = false;
+	(t.artist || "").split(/,|&|x|feat\.?|ft\.?/i).forEach(function(ar){
+		ar = normTxt(ar.replace(/official/i, ""));
+		if (ar){ hasArtist = true; if (hay.indexOf(" " + ar + " ") >= 0){ sc += 2; artistHit = true; } }
+	});
+	return hasArtist && !artistHit ? 0 : sc;   /* same title by someone else is not the song */
+}
 
 var videoCache = {};
 function findVideo(t){
 	var key = trackKey(t);
+	if (t.ytId) return Promise.resolve(t.ytId);
 	if (videoCache[key]) return videoCache[key];
 	var q = encodeURIComponent((t.title + " " + t.artist).trim());
 	function tryAt(i, filter){
@@ -2035,8 +2092,13 @@ function findVideo(t){
 		return fetch(PIPED[i] + "/search?q=" + q + "&filter=" + filter, ctl ? { signal: ctl.signal } : {})
 			.then(function(r){ clearTimeout(tm); return r.ok ? r.json() : null; })
 			.then(function(j){
-				var it = j && (j.items || []).filter(function(x){ return x.url && x.url.indexOf("/watch?v=") === 0; })[0];
-				if (it) return it.url.split("v=")[1].split("&")[0];
+				var best = null, bestSc = 0;
+				(j && j.items || []).forEach(function(x){
+					if (!x.url || x.url.indexOf("/watch?v=") !== 0) return;
+					var sc = matchScore(x, t);
+					if (sc > bestSc){ bestSc = sc; best = x; }
+				});
+				if (best) return best.url.split("v=")[1].split("&")[0];
 				return filter === "music_songs" ? tryAt(i, "videos") : tryAt(i + 1, "music_songs");
 			}, function(){ clearTimeout(tm); return tryAt(i + 1, "music_songs"); });
 	}
@@ -2142,6 +2204,8 @@ function syncListen(force){
 			if (!listening || playingKey !== key) return;
 			var cur = currentTrack(presence), at = wantPos(cur) || 0;
 			loadedKey = key;
+			lp.dataset.vid = id;
+			setFrameKind(id);
 			ayState = wantPos(cur) === null ? "paused" : "playing";
 			if (!ytPlayer){
 				/* own iframe so YouTube gets the page's origin + referrer (missing referrer = error 153) */
@@ -2158,6 +2222,7 @@ function syncListen(force){
 				ytPlayer = new YT.Player(ifr, {
 					events: {
 						onReady: function(e){
+							applyVol();
 							var w = wantPos(currentTrack(presence));
 							if (w === null){ e.target.pauseVideo(); lpSet("paused", '<span class="sub">❚❚ ayka paused · it resumes with them</span>'); }
 							else { e.target.seekTo(w, true); e.target.playVideo(); checkBlocked(); }
@@ -2180,6 +2245,51 @@ function syncListen(force){
 			lpSet("load", '<span class="sub">syncing…</span>');
 		});
 	});
+}
+
+/* ---- volume (YouTube controls are hidden, so it lives here) ---- */
+var vol = 70, muted = false;
+try { var sv = JSON.parse(localStorage.getItem("ayka-vol")); if (sv){ vol = sv.v; muted = !!sv.m; } } catch (e){}
+var VOL_CELLS = 12;
+function drawVol(){
+	var on = muted ? 0 : Math.round(vol / 100 * VOL_CELLS);
+	document.getElementById("vol-bar").innerHTML = "[" + "█".repeat(on) + '<span class="off">' + "░".repeat(VOL_CELLS - on) + "</span>]";
+	document.getElementById("vol-bar").setAttribute("aria-valuenow", muted ? 0 : vol);
+	document.getElementById("vol-n").textContent = muted ? "off" : vol + "%";
+	document.getElementById("vol-mute").classList.toggle("muted", muted);
+}
+function applyVol(){
+	drawVol();
+	try { localStorage.setItem("ayka-vol", JSON.stringify({ v: vol, m: muted })); } catch (e){}
+	if (!ytPlayer || !ytPlayer.setVolume) return;
+	ytPlayer.setVolume(vol);
+	if (muted || vol === 0) ytPlayer.mute(); else ytPlayer.unMute();
+}
+function setVol(v){ vol = Math.max(0, Math.min(100, Math.round(v))); muted = vol === 0; applyVol(); }
+document.getElementById("vol-down").addEventListener("click", function(){ setVol(vol - 10); });
+document.getElementById("vol-up").addEventListener("click", function(){ setVol((muted ? 0 : vol) + 10); });
+document.getElementById("vol-mute").addEventListener("click", function(){ muted = !muted; if (!muted && vol === 0) vol = 50; applyVol(); });
+var volBar = document.getElementById("vol-bar");
+volBar.addEventListener("click", function(e){
+	var r = volBar.getBoundingClientRect(), cw = r.width / (VOL_CELLS + 2);
+	setVol((e.clientX - r.left - cw) / (r.width - 2 * cw) * 100);
+});
+volBar.addEventListener("wheel", function(e){ e.preventDefault(); setVol((muted ? 0 : vol) + (e.deltaY < 0 ? 5 : -5)); }, { passive: false });
+volBar.addEventListener("keydown", function(e){
+	if (e.key === "ArrowRight" || e.key === "ArrowUp"){ e.preventDefault(); e.stopPropagation(); setVol(vol + 5); }
+	else if (e.key === "ArrowLeft" || e.key === "ArrowDown"){ e.preventDefault(); e.stopPropagation(); setVol(vol - 5); }
+});
+drawVol();
+
+/* ---- square crop for album-art videos (uploader "<artist> - Topic") ---- */
+var kindCache = {};
+function setFrameKind(id){
+	if (!(id in kindCache)){
+		kindCache[id] = fetch("https://www.youtube.com/oembed?format=json&url=" + encodeURIComponent("https://www.youtube.com/watch?v=" + id))
+			.then(function(r){ return r.ok ? r.json() : {}; })
+			.then(function(j){ return / - Topic$/.test(j.author_name || "") ? "cover" : "video"; }, function(){ return "video"; });
+	}
+	kindCache[id].then(function(k){ if (lp.dataset.vid === id) lp.classList.toggle("cover", k === "cover"); });
 }
 
 /* autoplay with sound can be blocked: the shield then becomes a single "start" button */
@@ -2318,7 +2428,7 @@ function navigate(dir){
 
 addEventListener("wheel", function(e){
 	if (e.ctrlKey || Math.abs(e.deltaY) < 2) return;
-	if (e.target.closest && e.target.closest("#dpop")) return;
+	if (e.target.closest && e.target.closest("#dpop, #lp")) return;
 	var dir = e.deltaY > 0 ? 1 : -1;
 	if (!animating && !wheelLock && nativeInside(dir)) return;
 	e.preventDefault();
