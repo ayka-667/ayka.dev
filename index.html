@@ -347,7 +347,7 @@ p{margin:.6em 0}
 .uses h3::before{content:"# ";color:var(--line)}
 .uses ul{list-style:none;padding:0;margin:0}
 .uses li{display:flex;gap:1ch;margin:.12em 0}
-.uses .k{width:9ch;flex:none;color:var(--dim)}
+.uses .k{width:11ch;flex:none;color:var(--dim)}
 .uses .v{min-width:0;color:var(--fg)}
 .uses .v i{font-style:normal;color:var(--dim)}
 
@@ -700,7 +700,7 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> cat /etc/setup.conf</p>
 			<div class="uses">
 					<section><h3>rig</h3><ul><li><span class="k">cpu</span><span class="v">AMD Ryzen 7 5700X <i>· 8c/16t</i></span></li><li><span class="k">gpu</span><span class="v">NVIDIA GeForce RTX 5060</span></li><li><span class="k">ram</span><span class="v">24 GB DDR4</span></li><li><span class="k">board</span><span class="v">MSI A520M PRO</span></li><li><span class="k">storage</span><span class="v">1 TB NVMe <i>(MSI M450)</i> + 2 TB HDD</span></li><li><span class="k">os</span><span class="v">Windows 11</span></li></ul></section>
-					<section><h3>desk</h3><ul><li><span class="k">screens</span><span class="v">3× 24" <i>· ASUS VG24VQ1B · BenQ GW2480 · Philips 243V7</i></span></li><li><span class="k">mouse</span><span class="v">Logitech G402</span></li><li><span class="k">keyboard</span><span class="v">Ajazz AK820</span></li><li><span class="k">audio</span><span class="v">Focusrite USB interface</span></li><li><span class="k">speaker</span><span class="v">JBL Flip Essential</span></li></ul></section>
+					<section><h3>desk</h3><ul><li><span class="k">screens</span><span class="v">3× 24" <i>· ASUS VG24VQ1B · BenQ GW2480 · Philips 243V7</i></span></li><li><span class="k">mouse</span><span class="v">Logitech G402</span></li><li><span class="k">keyboard</span><span class="v">Ajazz AK820</span></li><li><span class="k">sound card</span><span class="v">Focusrite Scarlett Solo Gen 4</span></li><li><span class="k">headphones</span><span class="v">Beyerdynamic DT 770 PRO</span></li><li><span class="k">mic</span><span class="v">Shure MV7X</span></li></ul></section>
 					<section><h3>code</h3><ul><li><span class="k">editors</span><span class="v">VS Code · Visual Studio</span></li><li><span class="k">terminal</span><span class="v">Windows Terminal · Termius</span></li><li><span class="k">langs</span><span class="v">JS/TS <i>(Node, Bun)</i> · Python · C# · C · Go · Rust · Lua</span></li><li><span class="k">ai</span><span class="v">Claude Code · OpenCode · LM Studio</span></li><li><span class="k">tools</span><span class="v">Git · HeidiSQL · WinSCP · HTTP Toolkit · VirtualBox · Ghidra · x64dbg · Wireshark</span></li></ul></section>
 					<section><h3>create</h3><ul><li><span class="k">music</span><span class="v">FL Studio 2025 <i>· FabFilter · Waves · Auto-Tune</i></span></li><li><span class="k">visual</span><span class="v">Photoshop · Blender</span></li><li><span class="k">video</span><span class="v">OBS Studio · EffectCraft · FilmCraft</span></li></ul></section>
 					<section><h3>daily</h3><ul><li><span class="k">browser</span><span class="v">Firefox</span></li><li><span class="k">chat</span><span class="v">Discord <i>(Vesktop)</i> · Telegram · Signal</span></li><li><span class="k">listen</span><span class="v">Liner · Spotify</span></li><li><span class="k">desktop</span><span class="v">Wallpaper Engine · Windhawk</span></li></ul></section>
@@ -2767,7 +2767,7 @@ mhList.addEventListener("focusin", function(e){
 });
 function loadHistory(){
 	api("/history").then(function(j){
-		mhTracks = (j.tracks || []).slice(0, 10);
+		mhTracks = (j.tracks || []).slice(0, 5);
 		if (mhSel >= mhTracks.length) mhSel = 0;
 		listHistory();
 	}).catch(function(){ mhList.innerHTML = '<li class="mh-empty">' + (API_READY ? "history unavailable right now." : "coming soon.") + "</li>"; });

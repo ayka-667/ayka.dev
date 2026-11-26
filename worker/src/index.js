@@ -11,7 +11,7 @@
 
 const DISCORD_ID = "1198196468272603196";
 const ORIGINS = ["https://ayka.dev", "https://www.ayka.dev", "http://localhost:8765", "http://127.0.0.1:8765"];
-const HISTORY_KEEP = 50;
+const HISTORY_KEEP = 5;
 const BOOK_PAGE = 25;
 
 export default {
@@ -56,7 +56,7 @@ export default {
 					await Promise.race([recordTrack(env).catch(() => {}), new Promise((r) => setTimeout(r, 2500))]);
 				}
 				const { results } = await env.DB.prepare(
-					"SELECT title, artist, album, art, app, link, started, seen FROM tracks ORDER BY seen DESC LIMIT 12"
+					"SELECT title, artist, album, art, app, link, started, seen FROM tracks ORDER BY seen DESC LIMIT " + HISTORY_KEEP
 				).all();
 				return json({ tracks: results }, 200, { "Cache-Control": "no-store" });
 			}
