@@ -340,6 +340,59 @@ p{margin:.6em 0}
 .gcal-legend i:first-of-type{margin-left:.6ch}
 .gcal-legend i:last-of-type{margin-right:.6ch}
 
+/* ---------- uses ---------- */
+.uses{display:grid;grid-template-columns:repeat(auto-fit,minmax(34ch,1fr));gap:.4em 4ch}
+.uses section{min-width:0}
+.uses h3{margin:.6em 0 .2em;font-size:inherit;font-weight:400;color:var(--green)}
+.uses h3::before{content:"# ";color:var(--line)}
+.uses ul{list-style:none;padding:0;margin:0}
+.uses li{display:flex;gap:1ch;margin:.12em 0}
+.uses .k{width:9ch;flex:none;color:var(--dim)}
+.uses .v{min-width:0;color:var(--fg)}
+.uses .v i{font-style:normal;color:var(--dim)}
+
+/* ---------- music history ---------- */
+.mh{display:flex;gap:3ch;align-items:flex-start}
+.mh-art{flex:none;display:block;width:calc(28 * 7px * .6);min-height:calc(15 * 7px * 1.09)}
+.mh-asc{margin:0;font-size:7px;line-height:1.09;font-weight:700;white-space:pre;letter-spacing:0}
+.mh-art img{width:118px;height:118px;object-fit:cover;display:block}
+.mh-list{list-style:none;padding:0;margin:0;flex:1;min-width:0}
+.mh-list li{display:flex;align-items:baseline;gap:1ch;padding:.08em .6ch;margin:0 -.6ch;cursor:default}
+.mh-list li.on{background:rgba(30,215,96,.08)}
+.mh-list li a{display:flex;align-items:baseline;gap:1ch;min-width:0;flex:1;color:inherit}
+.mh-list .n{color:#1ed760;flex:none}
+.mh-list .t{color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.mh-list .a{color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.mh-list .lead{min-width:1ch}
+.mh-list .w{color:var(--dim);white-space:nowrap;flex:none;font-size:13px}
+.mh-list li.live .w{color:#1ed760}
+.mh-empty{color:var(--dim)}
+
+/* ---------- guestbook ---------- */
+.gb-list{list-style:none;padding:0;margin:0 0 1em;max-height:15em;overflow:auto;scrollbar-width:none}
+.gb-list::-webkit-scrollbar{display:none}
+.gb-list li{margin:.15em 0;overflow-wrap:anywhere}
+.gb-list .ts{color:var(--dim)}
+.gb-list .nm{color:var(--blue)}
+.gb-list .del{color:var(--dim);margin-left:1ch}
+.gb-list .del:hover{color:var(--red)}
+.gb-list li.new{animation:gbnew 1.6s ease}
+@keyframes gbnew{from{background:rgba(126,231,135,.18)}to{background:transparent}}
+.gb-form{display:grid;grid-template-columns:auto 1fr;gap:.35em 1ch;align-items:center}
+.gb-form label{color:var(--dim)}
+.gb-form input{font:inherit;color:var(--hi);background:transparent;border:0;border-bottom:1px dashed var(--line);padding:.1em 0;outline:none;min-width:0;caret-color:var(--green)}
+.gb-form input:focus{border-bottom-color:var(--green)}
+.gb-form input::placeholder{color:#3d444d}
+.gb-row{grid-column:1 / -1;display:flex;gap:2ch;align-items:center;margin-top:.4em}
+.gb-row button{color:var(--fg)}
+.gb-row button:hover{color:var(--green)}
+.gb-row button:disabled{color:var(--dim);cursor:wait}
+#gb-state{color:var(--dim);font-size:13px}
+#gb-state.err{color:var(--red)}
+#gb-state.ok{color:var(--green)}
+.gb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+#visitors{color:var(--fg)}
+
 /* ---------- contact ---------- */
 
 .kv{list-style:none;padding:0;margin:0 0 .4em}
@@ -537,6 +590,7 @@ body.revealed #bar{transform:none}
 	.who{flex-direction:column;gap:1em}
 	.who pre{align-self:center}
 	#bar .opt{display:none}
+	.mh{flex-direction:column;gap:.8em}
 	.ptag{display:none}
 }
 
@@ -565,7 +619,7 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 		<a class="down" href="#whoami">[ scroll ↓ ]</a>
 	</header>
 
-	<section class="box" id="whoami" data-title="whoami" data-foot="1/3">
+	<section class="box" id="whoami" data-title="whoami" data-foot="1/6">
 		<div class="box-top" aria-hidden="true"></div>
 		<div class="box-body">
 			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> whoami</p>
@@ -602,7 +656,7 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 		<div class="box-bot" aria-hidden="true"></div>
 	</section>
 
-	<section class="box" id="projects" data-title="projects" data-foot="2/3">
+	<section class="box" id="projects" data-title="projects" data-foot="2/6">
 		<div class="box-top" aria-hidden="true"></div>
 		<div class="box-body">
 			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> tree ~/projects</p>
@@ -636,7 +690,49 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 		<div class="box-bot" aria-hidden="true"></div>
 	</section>
 
-	<section class="box" id="contact" data-title="contact" data-foot="3/3">
+	<section class="box" id="uses" data-title="uses" data-foot="3/6">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> cat /etc/setup.conf</p>
+			<div class="uses">
+					<section><h3>rig</h3><ul><li><span class="k">cpu</span><span class="v">AMD Ryzen 7 5700X <i>· 8c/16t</i></span></li><li><span class="k">gpu</span><span class="v">NVIDIA GeForce RTX 5060</span></li><li><span class="k">ram</span><span class="v">24 GB DDR4</span></li><li><span class="k">board</span><span class="v">MSI A520M PRO</span></li><li><span class="k">storage</span><span class="v">1 TB NVMe <i>(MSI M450)</i> + 2 TB HDD</span></li><li><span class="k">os</span><span class="v">Windows 11</span></li></ul></section>
+					<section><h3>desk</h3><ul><li><span class="k">screens</span><span class="v">3× 24" <i>· ASUS VG24VQ1B · BenQ GW2480 · Philips 243V7</i></span></li><li><span class="k">mouse</span><span class="v">Logitech G402</span></li><li><span class="k">keyboard</span><span class="v">Ajazz AK820</span></li><li><span class="k">audio</span><span class="v">Focusrite USB interface</span></li><li><span class="k">speaker</span><span class="v">JBL Flip Essential</span></li></ul></section>
+					<section><h3>code</h3><ul><li><span class="k">editors</span><span class="v">VS Code · Visual Studio</span></li><li><span class="k">terminal</span><span class="v">Windows Terminal · Termius</span></li><li><span class="k">langs</span><span class="v">JS/TS <i>(Node, Bun)</i> · Python · C# · C · Go · Rust · Lua</span></li><li><span class="k">ai</span><span class="v">Claude Code · OpenCode · LM Studio</span></li><li><span class="k">tools</span><span class="v">Git · HeidiSQL · WinSCP · HTTP Toolkit · VirtualBox · Ghidra · x64dbg · Wireshark</span></li></ul></section>
+					<section><h3>create</h3><ul><li><span class="k">music</span><span class="v">FL Studio 2025 <i>· FabFilter · Waves · Auto-Tune</i></span></li><li><span class="k">visual</span><span class="v">Photoshop · Blender</span></li><li><span class="k">video</span><span class="v">OBS Studio · EffectCraft · FilmCraft</span></li></ul></section>
+					<section><h3>daily</h3><ul><li><span class="k">browser</span><span class="v">Firefox</span></li><li><span class="k">chat</span><span class="v">Discord <i>(Vesktop)</i> · Telegram · Signal</span></li><li><span class="k">listen</span><span class="v">Liner · Spotify</span></li><li><span class="k">desktop</span><span class="v">Wallpaper Engine · Windhawk</span></li></ul></section>
+			</div>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
+
+	<section class="box" id="music" data-title="music" data-foot="4/6">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> tail ~/.history/music</p>
+			<div class="mh">
+				<a class="mh-art" id="mh-art" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"></a>
+				<ul class="mh-list" id="mh-list"><li class="mh-empty">loading…</li></ul>
+			</div>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
+
+	<section class="box" id="guestbook" data-title="guestbook" data-foot="5/6">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> tail -f guestbook.log</p>
+			<ul class="gb-list" id="gb-list"><li class="dim">loading…</li></ul>
+			<form class="gb-form" id="gb-form" autocomplete="off">
+				<label for="gb-name">name ›</label><input id="gb-name" maxlength="24" placeholder="anon" spellcheck="false">
+				<label for="gb-msg">msg&nbsp; ›</label><input id="gb-msg" maxlength="200" placeholder="leave a message…" required>
+				<input class="gb-hp" name="website" id="gb-hp" tabindex="-1" aria-hidden="true">
+				<div class="gb-row"><button type="submit" id="gb-send">[ ↵ send ]</button><span id="gb-state"></span></div>
+			</form>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
+
+	<section class="box" id="contact" data-title="contact" data-foot="6/6">
 		<div class="box-top" aria-hidden="true"></div>
 		<div class="box-body">
 			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> cat contact.txt</p>
@@ -652,7 +748,7 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 
 	<footer class="foot">
 		<pre id="footline" aria-hidden="true"></pre>
-		<p>ayka.dev · <span id="year">2026</span> · <button id="replay" type="button">[ r ] replay intro</button> · <button id="lite" type="button" title="lighter animation: fewer frames, lower resolution">[ lite mode ]</button></p>
+		<p>ayka.dev · <span id="year">2026</span> · <span id="visitors-wrap" hidden>visitors <span id="visitors"></span> · </span><button id="replay" type="button">[ r ] replay intro</button> · <button id="lite" type="button" title="lighter animation: fewer frames, lower resolution">[ lite mode ]</button></p>
 	</footer>
 
 </main>
@@ -666,7 +762,10 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 	<a class="tab opt" href="#top" data-s="top">0:home</a>
 	<a class="tab opt" href="#whoami" data-s="whoami">1:whoami</a>
 	<a class="tab opt" href="#projects" data-s="projects">2:projects</a>
-	<a class="tab opt" href="#contact" data-s="contact">3:contact</a>
+	<a class="tab opt" href="#uses" data-s="uses">3:uses</a>
+	<a class="tab opt" href="#music" data-s="music">4:music</a>
+	<a class="tab opt" href="#guestbook" data-s="guestbook">5:guestbook</a>
+	<a class="tab opt" href="#contact" data-s="contact">6:contact</a>
 	<span class="sp"></span>
 	<a id="gh" class="opt2" href="https://github.com/ayka-667/" target="_blank" rel="noopener" hidden></a>
 	<span class="sep opt2" id="gh-sep" hidden>│</span>
@@ -1538,8 +1637,9 @@ function replay(){
 document.getElementById("skip").addEventListener("click", function(e){ e.stopPropagation(); skip(); });
 document.getElementById("replay").addEventListener("click", function(e){ e.stopPropagation(); replay(); });
 addEventListener("click", function(){ if (phase === "intro") skip(); });
+function typing(e){ return e.target && e.target.closest && !!e.target.closest("input, textarea, [contenteditable]"); }
 addEventListener("keydown", function(e){
-	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	if (e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
 	if (phase === "intro" && (e.key === "Escape" || e.key === "Enter")){ e.preventDefault(); skip(); }
 	else if (phase === "site" && (e.key === "r" || e.key === "R")) replay();
 });
@@ -1706,7 +1806,7 @@ var secIO = new IntersectionObserver(function(es){
 		tabs.forEach(function(a){ a.classList.toggle("on", a.dataset.s === e.target.id); });
 	});
 }, { rootMargin: "-45% 0px -50% 0px" });
-["top", "whoami", "projects", "contact"].forEach(function(id){ secIO.observe(document.getElementById(id)); });
+["top", "whoami", "projects", "uses", "music", "guestbook", "contact"].forEach(function(id){ secIO.observe(document.getElementById(id)); });
 
 /* ---------- clock: my time (Europe/Paris) + difference with the visitor ---------- */
 var clock = document.getElementById("clock");
@@ -1921,8 +2021,9 @@ function asciify(url, cols, rows, round){
 			asciiCache[url] = out;
 		} catch (e){ asciiCache[url] = null; }
 		renderCard();
+		if (typeof drawHistory === "function") drawHistory();
 	};
-	im.onerror = function(){ asciiCache[url] = null; renderCard(); };
+	im.onerror = function(){ asciiCache[url] = null; renderCard(); if (typeof drawHistory === "function") drawHistory(); };
 	im.src = url;
 	return undefined;
 }
@@ -2582,12 +2683,138 @@ cachedJSON("ayka-gh-cal", "https://github-contributions-api.jogruber.de/v4/ayka-
 }).catch(function(){});
 addEventListener("resize", function(){ clearTimeout(drawGcal._t); drawGcal._t = setTimeout(drawGcal, 200); });
 
+/* =====================================================================
+   API (Cloudflare Worker): visitor counter, music history, guestbook
+   ===================================================================== */
+var API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]localapi\b/.test(location.search)
+	? "http://127.0.0.1:8787" : "https://ayka-api.REPLACE_ME.workers.dev";
+var API_READY = API.indexOf("REPLACE_ME") < 0;
+function api(path, opt){
+	if (!API_READY) return Promise.reject(new Error("coming soon"));
+	return fetch(API + path, opt).then(function(r){
+		return r.json().then(function(j){ if (!r.ok) throw new Error(j && j.error || "error " + r.status); return j; });
+	});
+}
+function attr(s){ return esc(String(s || "")).replace(/"/g, "&quot;"); }
+
+/* ---------- visitor counter (counted once per day, server side) ---------- */
+(function(){
+	var counted = false;
+	try { counted = sessionStorage.getItem("ayka-visit") === "1"; } catch (e){}
+	(counted ? api("/stats") : api("/visit", { method: "POST" })).then(function(j){
+		try { sessionStorage.setItem("ayka-visit", "1"); } catch (e){}
+		if (j.visitors == null) return;
+		document.getElementById("visitors").textContent = ("00000" + j.visitors).slice(-Math.max(6, String(j.visitors).length));
+		document.getElementById("visitors-wrap").hidden = false;
+	}).catch(function(){});
+})();
+
+/* ---------- music history: what I listened to lately ---------- */
+var mhTracks = [], mhSel = 0;
+var mhList = document.getElementById("mh-list"), mhArt = document.getElementById("mh-art");
+function trackLink(t){ return t.link || "https://music.youtube.com/search?q=" + encodeURIComponent(t.title + " " + t.artist); }
+function drawHistory(){
+	if (!mhTracks.length) return;
+	var t = mhTracks[mhSel] || mhTracks[0];
+	if (t.art){
+		var a = asciify(t.art, 28, 15, false);
+		mhArt.innerHTML = a ? '<pre class="mh-asc">' + a + "</pre>"
+			: a === null ? '<img src="' + attr(t.art) + '" alt="">' : '<pre class="mh-asc">' + (" ".repeat(28) + "\n").repeat(15) + "</pre>";
+	} else mhArt.innerHTML = "";
+	mhArt.href = trackLink(t);
+	[].forEach.call(mhList.children, function(li, i){ li.classList.toggle("on", i === mhSel); });
+}
+function listHistory(){
+	if (!mhTracks.length){ mhList.innerHTML = '<li class="mh-empty">nothing yet — the history fills up as I listen.</li>'; mhArt.innerHTML = ""; return; }
+	mhList.innerHTML = mhTracks.map(function(t, i){
+		var live = Date.now() - t.seen < 2.5 * 60000 && i === 0;
+		return '<li data-i="' + i + '" class="' + (live ? "live" : "") + '"><a href="' + attr(trackLink(t)) + '" target="_blank" rel="noopener" title="' +
+			attr(t.title + " — " + t.artist + (t.album ? " · " + t.album : "") + (t.app ? " · on " + t.app : "")) + '">' +
+			'<span class="n">' + (live ? "▶" : "♪") + '</span><span class="t">' + esc(t.title) + '</span><span class="a">' + esc(t.artist) +
+			'</span><span class="lead" aria-hidden="true"></span><span class="w">' + (live ? "now" : ago(new Date(t.seen).toISOString())) + "</span></a></li>";
+	}).join("");
+	drawHistory();
+}
+mhList.addEventListener("mouseover", function(e){
+	var li = e.target.closest("li[data-i]");
+	if (li && +li.dataset.i !== mhSel){ mhSel = +li.dataset.i; drawHistory(); }
+});
+mhList.addEventListener("focusin", function(e){
+	var li = e.target.closest("li[data-i]");
+	if (li){ mhSel = +li.dataset.i; drawHistory(); }
+});
+function loadHistory(){
+	api("/history").then(function(j){
+		mhTracks = (j.tracks || []).slice(0, 10);
+		if (mhSel >= mhTracks.length) mhSel = 0;
+		listHistory();
+	}).catch(function(){ mhList.innerHTML = '<li class="mh-empty">' + (API_READY ? "history unavailable right now." : "coming soon.") + "</li>"; });
+}
+loadHistory(); setInterval(loadHistory, 60000);
+
+/* ---------- guestbook ---------- */
+var gbList = document.getElementById("gb-list"), gbForm = document.getElementById("gb-form");
+var gbState = document.getElementById("gb-state"), gbSend = document.getElementById("gb-send");
+var adminKey = null;
+try {
+	var hm = location.hash.match(/^#admin=(.+)$/);
+	if (hm){ localStorage.setItem("ayka-admin", decodeURIComponent(hm[1])); window.history.replaceState(null, "", location.pathname + location.search); }
+	adminKey = localStorage.getItem("ayka-admin");
+} catch (e){}
+function gbDate(at){
+	var d = new Date(at);
+	return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toLowerCase() + " " +
+		d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+}
+function gbItem(m, isNew){
+	return '<li data-id="' + m.id + '"' + (isNew ? ' class="new"' : "") + '><span class="ts">[' + gbDate(m.at) + ']</span> <span class="nm">' +
+		esc(m.name) + '</span><span class="dim">:</span> ' + esc(m.msg) +
+		(adminKey ? '<button type="button" class="del" title="hide this message">[x]</button>' : "") + "</li>";
+}
+function loadBook(){
+	api("/guestbook").then(function(j){
+		var ms = j.messages || [];
+		gbList.innerHTML = ms.length ? ms.map(function(m){ return gbItem(m); }).join("") : '<li class="dim">no messages yet — be the first.</li>';
+	}).catch(function(){ gbList.innerHTML = '<li class="dim">' + (API_READY ? "guestbook unavailable right now." : "the guestbook opens soon.") + "</li>"; });
+}
+function gbSay(txt, cls){ gbState.textContent = txt; gbState.className = cls || ""; }
+gbForm.addEventListener("submit", function(e){
+	e.preventDefault();
+	var name = document.getElementById("gb-name").value.trim(), msg = document.getElementById("gb-msg").value.trim();
+	if (msg.length < 2){ gbSay("write a message first", "err"); return; }
+	gbSend.disabled = true; gbSay("sending…");
+	api("/guestbook", { method: "POST", headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ name: name, msg: msg, website: document.getElementById("gb-hp").value }) })
+		.then(function(j){
+			document.getElementById("gb-msg").value = "";
+			gbSay("✓ thanks!", "ok");
+			if (j.message){
+				if (!gbList.querySelector("li[data-id]")) gbList.innerHTML = "";
+				gbList.insertAdjacentHTML("afterbegin", gbItem(j.message, true));
+				gbList.scrollTop = 0;
+			}
+			try { localStorage.setItem("ayka-gb-name", name); } catch (err){}
+		})
+		.catch(function(err){ gbSay(err.message || "could not send", "err"); })
+		.then(function(){ gbSend.disabled = false; setTimeout(function(){ if (gbState.className !== "err") gbSay(""); }, 3000); });
+});
+gbList.addEventListener("click", function(e){
+	var b = e.target.closest(".del");
+	if (!b || !adminKey) return;
+	var li = b.closest("li");
+	api("/guestbook/" + li.dataset.id, { method: "DELETE", headers: { "X-Admin-Key": adminKey } })
+		.then(function(){ li.remove(); }).catch(function(err){ gbSay(err.message, "err"); });
+});
+try { document.getElementById("gb-name").value = localStorage.getItem("ayka-gb-name") || ""; } catch (e){}
+if (!API_READY){ gbSend.disabled = true; [].forEach.call(gbForm.querySelectorAll("input"), function(i){ i.disabled = true; }); }
+loadBook(); setInterval(function(){ if (!document.hidden) loadBook(); }, 45000);
+
 document.getElementById("year").textContent = new Date().getFullYear();
 
 /* ---------- section-by-section smooth scrolling ----------
    one small scroll (wheel, keys or swipe) glides straight to the next section.
    a section taller than the screen scrolls normally until its edge is reached. */
-var SECS = ["top", "whoami", "projects", "contact"].map(function(id){ return document.getElementById(id); });
+var SECS = ["top", "whoami", "projects", "uses", "music", "guestbook", "contact"].map(function(id){ return document.getElementById(id); });
 var BAR_H = 26;
 var anim = 0, animating = false, wheelLock = false, wheelT = 0;
 
@@ -2649,7 +2876,7 @@ function navigate(dir){
 
 addEventListener("wheel", function(e){
 	if (e.ctrlKey || Math.abs(e.deltaY) < 2) return;
-	if (e.target.closest && e.target.closest("#dpop, #lp")) return;
+	if (e.target.closest && e.target.closest("#dpop, #lp, .gb-list")) return;
 	var dir = e.deltaY > 0 ? 1 : -1;
 	if (!animating && !wheelLock && nativeInside(dir)) return;
 	e.preventDefault();
@@ -2669,7 +2896,7 @@ addEventListener("touchstart", function(e){
 addEventListener("touchmove", function(e){
 	var y = e.touches[0].clientY, dir = ty0 - y > 0 ? 1 : -1;
 	tyLast = y;
-	if (e.target.closest && e.target.closest("#dpop")){ touchNative = true; return; }
+	if (e.target.closest && e.target.closest("#dpop, .gb-list")){ touchNative = true; return; }
 	if (Math.abs(ty0 - y) > 4 && !touchNative) touchNative = phase === "site" && nativeInside(dir);
 	if (!touchNative && e.cancelable) e.preventDefault();
 }, { passive: false });
@@ -2679,7 +2906,7 @@ addEventListener("touchend", function(){
 }, { passive: true });
 
 addEventListener("keydown", function(e){
-	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	if (e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
 	var k = e.key, dir = 0;
 	if (k === "ArrowDown" || k === "PageDown" || (k === " " && !e.shiftKey)) dir = 1;
 	else if (k === "ArrowUp" || k === "PageUp" || (k === " " && e.shiftKey)) dir = -1;

@@ -1,0 +1,12 @@
+name = "ayka-api"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# every minute: record what I'm listening to
+[triggers]
+crons = ["* * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ayka-db"
+database_id = "REPLACE_ME"
