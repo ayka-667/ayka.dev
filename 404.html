@@ -1,383 +1,345 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
-  <title>Ayka.dev — Erreur</title>
-  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
-  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 · ayka.dev</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#010203">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    :root {
-      --bg: #000000;
-      --fg: #ffffff;
-      --muted: #737373;
-      --accent: #3b82f6;
-      --accent-glow: #60a5fa;
-      --purple: #8b5cf6;
-      --cyan: #06b6d4;
-      --card: #0a0a0a;
-      --border: #1a1a1a;
-    }
+<style>
+:root{
+	--bg:#010203;
+	--fg:#c9d1d9;
+	--hi:#f0f6fc;
+	--dim:#6e7681;
+	--line:#2d333b;
+	--green:#7ee787;
+	--blue:#79c0ff;
+	--purple:#d2a8ff;
+	--red:#ff7b72;
+	--font:"JetBrains Mono","Cascadia Mono",Consolas,Menlo,monospace;
+}
 
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(30px, -30px) rotate(120deg); }
-      66% { transform: translate(-20px, 20px) rotate(240deg); }
-    }
+*{box-sizing:border-box}
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+html,body{margin:0;height:100%;background:var(--bg);scrollbar-width:none}
+html::-webkit-scrollbar{display:none}
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
+body{
+	color:var(--fg);
+	font:15px/1.6 var(--font);
+	overflow:hidden;
+	-webkit-font-smoothing:antialiased;
+}
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--fg);
-      line-height: 1.6;
-      overflow-x: hidden;
-      position: relative;
-      min-height: 100vh;
-    }
+::selection{background:var(--purple);color:#000}
 
-    /* Orbes lumineux flottants */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.3;
-      pointer-events: none;
-      z-index: 0;
-      will-change: transform;
-    }
+a,button{color:var(--hi);text-decoration:none;font:inherit;background:none;border:0;padding:0;cursor:pointer}
 
-    .orb-1 {
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-      top: -250px;
-      left: -250px;
-      animation: float 25s ease-in-out infinite;
-    }
+#sky{position:fixed;inset:0;width:100%;height:100%;display:block}
 
-    .orb-2 {
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, var(--purple) 0%, transparent 70%);
-      bottom: -200px;
-      right: -200px;
-      animation: float 30s ease-in-out infinite reverse;
-    }
+main{
+	position:relative;
+	z-index:1;
+	min-height:100%;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:center;
+	gap:1.6em;
+	padding:24px 12px;
+	text-align:center;
+}
 
-    .orb-3 {
-      width: 350px;
-      height: 350px;
-      background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      animation: float 35s ease-in-out infinite;
-    }
+.rgb{
+	background:linear-gradient(90deg,var(--green),var(--blue),var(--purple),var(--red),var(--green));
+	background-size:300% 100%;
+	-webkit-background-clip:text;
+	background-clip:text;
+	color:transparent;
+	animation:hue 8s linear infinite;
+	filter:drop-shadow(0 0 8px rgba(121,192,255,.3));
+}
 
-    /* Grille de fond */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: 
-        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-      background-size: 50px 50px;
-      pointer-events: none;
-      z-index: 1;
-      mask-image: radial-gradient(ellipse 80% 50% at 50% 50%, black 40%, transparent 100%);
-    }
+@keyframes hue{to{background-position:300% 0}}
 
-    /* Main content */
-    main {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 24px;
-      position: relative;
-      z-index: 2;
-    }
+pre{margin:0;white-space:pre}
 
-    .error-container {
-      max-width: 550px;
-      width: 100%;
-      background: rgba(10, 10, 10, 0.5);
-      border: 1px solid var(--border);
-      border-radius: 32px;
-      padding: 48px 40px;
-      backdrop-filter: blur(20px);
-      box-shadow: 
-        0 0 0 1px rgba(255, 255, 255, 0.05),
-        0 32px 64px rgba(0, 0, 0, 0.6);
-      animation: fadeInUp 0.8s ease-out;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
+#eye{font-size:14px;line-height:1.15;font-weight:700}
+#eye .pupil{color:var(--hi);-webkit-text-fill-color:var(--hi);text-shadow:0 0 8px rgba(210,168,255,.9)}
 
-    .error-container::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-      opacity: 0.5;
-    }
+#big{font-size:14px;line-height:1}
 
-    .error-illustration {
-      font-size: 80px;
-      line-height: 1;
-      margin-bottom: 20px;
-      animation: pulse 3s ease-in-out infinite;
-      position: relative;
-      z-index: 1;
-    }
+#term{
+	text-align:left;
+	font-size:14px;
+	line-height:1.6;
+	color:var(--line);
+}
 
-    .error-code {
-      font-size: 64px;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--purple), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.04em;
-      margin-bottom: 12px;
-      position: relative;
-      z-index: 1;
-    }
+#term .t{color:var(--green);font-weight:700}
+#term .ps{color:var(--green)}
+#term .path{color:var(--blue)}
+#term .txt{color:var(--fg)}
+#term .err{color:var(--red)}
+#term .dim{color:var(--dim)}
+#term .cur{color:var(--green);animation:blink 1s steps(1) infinite}
+#term a{color:var(--fg);transition:background .2s,color .2s}
+#term a:hover{color:var(--green);background:rgba(126,231,135,.14)}
 
-    .error-title {
-      font-size: 28px;
-      font-weight: 900;
-      margin-bottom: 12px;
-      letter-spacing: -0.02em;
-      position: relative;
-      z-index: 1;
-    }
+@keyframes blink{50%{opacity:0}}
 
-    .error-desc {
-      font-size: 16px;
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 32px;
-      max-width: 450px;
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-      z-index: 1;
-    }
+.hint{font-size:12px;color:var(--dim)}
 
-    .btn {
-      padding: 10px 20px;
-      border-radius: 100px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: none;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
+@media (max-width:640px){
+	body{font-size:13px}
+	#eye,#big,#term{font-size:11px}
+}
 
-    .error-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      color: white;
-      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.4);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-primary::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, var(--accent-glow), var(--cyan));
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .btn-primary:hover::before {
-      opacity: 1;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 20px 48px rgba(59, 130, 246, 0.5);
-    }
-
-    .btn span {
-      position: relative;
-      z-index: 1;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--fg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-3px);
-    }
-
-    .error-help {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 16px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .error-trace {
-      width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border);
-      padding: 16px;
-      border-radius: 12px;
-      color: var(--muted);
-      font-family: ui-monospace, 'SF Mono', Monaco, monospace;
-      font-size: 13px;
-      overflow: auto;
-      max-height: 120px;
-      text-align: left;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .error-container {
-        padding: 32px 24px;
-      }
-
-      .error-illustration {
-        font-size: 64px;
-      }
-
-      .error-code {
-        font-size: 48px;
-      }
-
-      .error-title {
-        font-size: 24px;
-      }
-
-      .error-desc {
-        font-size: 15px;
-      }
-
-      .error-actions {
-        flex-direction: column;
-      }
-
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    ::selection {
-      background: var(--accent);
-      color: white;
-    }
-  </style>
+@media (prefers-reduced-motion:reduce){
+	*{animation:none!important}
+}
+</style>
 </head>
+
 <body>
-  <!-- Orbes lumineux -->
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
 
-  <main role="main">
-    <article class="error-container" aria-labelledby="errorTitle">
-      <div class="error-illustration" aria-hidden="true">🛠️</div>
-      <div class="error-code" id="errorCode">404</div>
-      <h1 id="errorTitle" class="error-title">Page introuvable</h1>
-      <div class="error-desc" id="errorDesc">
-        La page que vous recherchez n'existe pas, a été déplacée ou le lien est incorrect. Vérifiez l'URL ou revenez à l'accueil.
-      </div>
-      
-      <div class="error-actions" role="group" aria-label="Actions d'erreur">
-        <a class="btn btn-primary" href="/" id="homeBtn">
-          <span>Retour à l'accueil</span>
-        </a>
-        <button class="btn btn-secondary" id="retryBtn" type="button">
-          <span>🔄 Réessayer</span>
-        </button>
-        <a class="btn btn-secondary" href="mailto:contact@ayka.dev?subject=Erreur%20404%20sur%20www.ayka.dev" id="reportBtn">
-          <span>Signaler le problème</span>
-        </a>
-      </div>
+<canvas id="sky" aria-hidden="true"></canvas>
 
-      <div class="error-help">Besoin d'aide ? Tu peux réessayer, revenir à l'accueil, ou nous envoyer un message.</div>
-      <div class="error-trace" id="trace" aria-live="polite">Trace : aucune information</div>
-    </article>
-  </main>
+<main>
+	<pre id="eye" class="rgb" aria-hidden="true"></pre>
+	<pre id="big" class="rgb" aria-label="404"></pre>
+	<pre id="term" aria-live="polite"></pre>
+	<div class="hint">[ enter ] home · [ r ] retry</div>
+</main>
 
-  <script>
-    // Script pour personnaliser la page via query params
-    (function(){
-      const params = new URLSearchParams(location.search);
-      const code = params.get('code') || '404';
-      const message = params.get('message') || (code === '404' ? 'Page introuvable' : 'Erreur serveur');
-      const trace = params.get('trace') || '';
-      const desc = params.get('desc');
+<script>
+(function(){
+"use strict";
 
-      document.getElementById('errorCode').textContent = code;
-      document.getElementById('errorTitle').textContent = message;
-      if (desc) document.getElementById('errorDesc').textContent = decodeURIComponent(desc);
-      if (trace) document.getElementById('trace').textContent = decodeURIComponent(trace);
-      else document.getElementById('trace').textContent = 'Aucune trace disponible.';
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function esc(s){ return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-      // Bouton Réessayer : recharge la page
-      document.getElementById('retryBtn').addEventListener('click', function(){
-        location.reload();
-      });
-    })();
-  </script>
+/* ---------- ascii starfield, drifting toward you ---------- */
+var cv = document.getElementById("sky"), cx = cv.getContext("2d");
+var stars = [], NS = 260, dpr = 1;
+function rs(s){
+	s.x = Math.random() * 2 - 1; s.y = Math.random() * 2 - 1; s.z = Math.random() * 0.9 + 0.1;
+	s.b = 0.15 + 0.85 * Math.pow(Math.random(), 3);
+	s.c = Math.random() < 0.7 ? [180, 205, 255] : [255, 205, 150];
+	s.p = Math.random() * 6.28;
+	return s;
+}
+for (var i = 0; i < NS; i++) stars.push(rs({}));
+function size(){
+	dpr = Math.min(devicePixelRatio || 1, 2);
+	cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+}
+size();
+addEventListener("resize", size);
+var mx = 0, my = 0, tmx = 0, tmy = 0;
+addEventListener("pointermove", function(e){
+	tmx = e.clientX / innerWidth * 2 - 1;
+	tmy = e.clientY / innerHeight * 2 - 1;
+}, { passive: true });
+
+var last = 0;
+function sky(t){
+	var dt = Math.min(0.05, (t - last) / 1000 || 0); last = t;
+	mx += (tmx - mx) * 0.04; my += (tmy - my) * 0.04;
+	var w = cv.width, h = cv.height, u = Math.min(w, h);
+	cx.fillStyle = "#010203"; cx.fillRect(0, 0, w, h);
+	/* faint nebula glow following the cursor */
+	var gx = w / 2 + mx * w * 0.18, gy = h / 2 + my * h * 0.18;
+	var g = cx.createRadialGradient(gx, gy, 0, gx, gy, u * 0.55);
+	g.addColorStop(0, "rgba(120,90,255,.10)"); g.addColorStop(0.5, "rgba(60,80,220,.05)"); g.addColorStop(1, "rgba(0,0,0,0)");
+	cx.fillStyle = g; cx.fillRect(0, 0, w, h);
+	cx.textAlign = "center"; cx.textBaseline = "middle";
+	var fs = 13 * dpr;
+	cx.font = "700 " + fs + "px " + '"JetBrains Mono",Consolas,monospace';
+	for (var i = 0; i < NS; i++){
+		var s = stars[i];
+		if (!reduce) s.z -= dt * 0.045;
+		if (s.z < 0.08) rs(s), s.z = 1;
+		var px = w / 2 + (s.x / s.z) * u * 0.5 - mx * 14 * dpr / s.z;
+		var py = h / 2 + (s.y / s.z) * u * 0.5 - my * 10 * dpr / s.z;
+		if (px < -20 || px > w + 20 || py < -20 || py > h + 20){ rs(s); s.z = 1; continue; }
+		var a = s.b * Math.min(1, (1 - s.z) * 1.6) * (0.75 + 0.25 * Math.sin(t * 0.002 + s.p));
+		if (a < 0.03) continue;
+		cx.fillStyle = "rgba(" + s.c[0] + "," + s.c[1] + "," + s.c[2] + "," + a.toFixed(3) + ")";
+		cx.fillText(a < 0.25 ? "." : a < 0.5 ? "+" : a < 0.8 ? "*" : "@", px, py);
+	}
+	if (!reduce) requestAnimationFrame(sky);
+}
+requestAnimationFrame(sky);
+
+/* ---------- ascii eye: follows the cursor, blinks ---------- */
+var eyeEl = document.getElementById("eye");
+var OUT = [
+	"        .-'''''''''-.        ",
+	"    .-'               '-.    ",
+	"  .'                     '.  ",
+	" (                         ) ",
+	"  '.                     .'  ",
+	"    '-.               .-'    ",
+	"        '-.........-'        "
+];
+var CLOSED = [
+	"                             ",
+	"                             ",
+	"                             ",
+	" ('-.                   .-') ",
+	"     '-._____________.-'     ",
+	"                             ",
+	"                             "
+];
+var IRIS = [" .---. ", "( (@) )", " '---' "];
+var blinkUntil = 0, ex = 0, ey = 0;
+
+function drawEye(now){
+	var lines;
+	if (now < blinkUntil){
+		lines = CLOSED.map(esc);
+	} else {
+		ex += (tmx - ex) * 0.12; ey += (tmy - ey) * 0.12;
+		var dy = ey > 0.45 ? 1 : ey < -0.45 ? -1 : 0;
+		var lim = dy ? 3 : 7, dx = Math.max(-lim, Math.min(lim, Math.round(ex * 7)));
+		var c0 = Math.floor((OUT[0].length - IRIS[1].length) / 2) + dx, r0 = 2 + dy;
+		lines = OUT.map(function(l, r){
+			var k = r - r0;
+			if (k < 0 || k > 2) return esc(l);
+			var row = IRIS[k];
+			var html = esc(l.slice(0, c0));
+			if (k === 1) html += esc(row.slice(0, 3)) + '<span class="pupil">@</span>' + esc(row.slice(4));
+			else html += esc(row);
+			return html + esc(l.slice(c0 + row.length));
+		});
+	}
+	eyeEl.innerHTML = lines.join("\n");
+}
+(function eyeLoop(){
+	drawEye(performance.now());
+	if (!reduce) setTimeout(eyeLoop, 50);
+})();
+if (!reduce) (function sched(){
+	setTimeout(function(){ blinkUntil = performance.now() + 140; sched(); }, 2200 + Math.random() * 3800);
+})();
+
+/* ---------- "404" in the site's box-drawing letters with a shading wave ---------- */
+var L = {
+	"4": ["╔══╗░╔══╗", "║  ║░║  ║", "║  ╚═╝  ║", "╚════╗  ║", "░░░░░║  ║", "░░░░░╚══╝"],
+	"0": ["╔═══════╗", "║  ╔═╗  ║", "║  ║░║  ║", "║  ║░║  ║", "║  ╚═╝  ║", "╚═══════╝"]
+};
+var rows = [];
+for (var r = 0; r < 6; r++) rows.push("░" + "404".split("").map(function(ch){ return L[ch][r]; }).join("░") + "░");
+rows.unshift("░".repeat(rows[0].length)); rows.push("░".repeat(rows[0].length));
+var SH = [" ", "░", "░", "▒", "▓", "█", "▓", "▒", "░", "░"];
+var big = document.getElementById("big");
+function drawBig(t){
+	big.textContent = rows.map(function(row, y){
+		return row.replace(/░/g, function(_, x){
+			var v = Math.sin(x * 0.22 + y * 0.6 - t * 0.002) * 0.5 + 0.5;
+			return SH[Math.floor(v * (SH.length - 1))];
+		});
+	}).join("\n");
+}
+drawBig(0);
+if (!reduce) (function loop(t){ drawBig(t); setTimeout(function(){ requestAnimationFrame(loop); }, 70); })(0);
+
+/* ---------- terminal box: types the failed command ---------- */
+var term = document.getElementById("term");
+var path = decodeURIComponent(location.pathname || "/") + (location.search || "");
+if (path.length > 60) path = path.slice(0, 57) + "...";
+
+function boxWidth(){
+	var probe = document.createElement("span");
+	probe.textContent = "─".repeat(50);
+	probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+	term.appendChild(probe);
+	var cw = probe.getBoundingClientRect().width / 50;
+	term.removeChild(probe);
+	return Math.max(30, Math.min(58, Math.floor((innerWidth - 24) / cw)));
+}
+
+function wrap(text, w){
+	var out = [];
+	while (text.length > w){
+		var cut = text.lastIndexOf(" ", w);
+		if (cut < w * 0.5) cut = w;
+		out.push(text.slice(0, cut));
+		text = text.slice(cut).replace(/^ /, "");
+	}
+	out.push(text);
+	return out;
+}
+
+/* each line: array of [cls, text] segments, or a raw html line */
+function render(lines, typed){
+	var W = boxWidth(), inner = W - 4, title = "error";
+	var top = '┌─[ <span class="t">' + title + "</span> ]" + "─".repeat(Math.max(0, W - title.length - 7)) + "┐";
+	var bot = "└" + "─".repeat(W - 2) + "┘";
+	var body = [];
+	lines.forEach(function(segs){
+		if (segs.html){ body.push("│ " + segs.html + " ".repeat(Math.max(0, inner - segs.len)) + " │"); return; }
+		var plain = segs.map(function(s){ return s[1]; }).join("");
+		var parts = wrap(plain, inner), pos = 0;
+		parts.forEach(function(part){
+			var html = "", start = pos, end = pos + part.length, acc = 0;
+			segs.forEach(function(s){
+				var a = Math.max(start, acc), b = Math.min(end, acc + s[1].length);
+				if (b > a) html += '<span class="' + s[0] + '">' + esc(s[1].slice(a - acc, b - acc)) + "</span>";
+				acc += s[1].length;
+			});
+			pos = end;
+			while (pos < plain.length && plain[pos] === " ") pos++;
+			body.push("│ " + html + " ".repeat(Math.max(0, inner - part.length)) + " │");
+		});
+	});
+	term.innerHTML = [top, "│" + " ".repeat(W - 2) + "│"].concat(body, ["│" + " ".repeat(W - 2) + "│", bot]).join("\n");
+}
+
+var cmd = "cd " + path;
+var prompt = [["ps", "ayka@dev"], ["dim", ":"], ["path", "~"], ["dim", "$ "]];
+var links = { html: '<a href="/">[ ← back home ]</a>  <a href="#" id="retry">[ ↻ retry ]</a>', len: 28 };
+var state = { n: reduce ? cmd.length : 0, done: reduce };
+
+function frame(){
+	var lines = [prompt.concat([["txt", cmd.slice(0, state.n)], ["cur", state.done ? "" : "█"]])];
+	if (state.done){
+		lines.push([["err", "bash: cd: " + path + ": no such file or directory"]]);
+		lines.push([["dim", "this page drifted off into space."]]);
+		lines.push([["dim", ""]]);
+		lines.push(links);
+	}
+	render(lines);
+	var r = document.getElementById("retry");
+	if (r) r.onclick = function(e){ e.preventDefault(); location.reload(); };
+}
+
+(function type(){
+	frame();
+	if (state.done) return;
+	if (state.n < cmd.length){ state.n++; setTimeout(type, 35 + Math.random() * 45); }
+	else setTimeout(function(){ state.done = true; frame(); }, 380);
+})();
+addEventListener("resize", frame);
+
+addEventListener("keydown", function(e){
+	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	if (e.key === "Enter" || e.key === "Escape" || e.key === "Backspace") location.href = "/";
+	else if (e.key === "r" || e.key === "R") location.reload();
+});
+
+})();
+</script>
+
 </body>
 </html>
