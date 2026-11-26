@@ -1,6 +1,11 @@
-name = "ayka-api"
+# the worker created in the dashboard, served on workers-api.ayka.dev
+name = "morning-boat-556b"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
+
+# my own domain only: the default *.workers.dev address (which shows my e-mail) stays off
+workers_dev = false
+routes = [{ pattern = "workers-api.ayka.dev", custom_domain = true }]
 
 # every minute: record what I'm listening to
 [triggers]
@@ -9,4 +14,4 @@ crons = ["* * * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "ayka-db"
-database_id = "REPLACE_ME"
+database_id = "c472220a-ba4f-4244-bc88-621f59c64ad2"

@@ -2687,7 +2687,7 @@ addEventListener("resize", function(){ clearTimeout(drawGcal._t); drawGcal._t = 
    API (Cloudflare Worker): visitor counter, music history, guestbook
    ===================================================================== */
 var API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]localapi\b/.test(location.search)
-	? "http://127.0.0.1:8787" : "https://ayka-api.REPLACE_ME.workers.dev";
+	? "http://127.0.0.1:8787" : "https://workers-api.ayka.dev";
 var API_READY = API.indexOf("REPLACE_ME") < 0;
 function api(path, opt){
 	if (!API_READY) return Promise.reject(new Error("coming soon"));
