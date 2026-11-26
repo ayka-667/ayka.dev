@@ -6,12 +6,13 @@
  *   GET    /guestbook        latest messages
  *   POST   /guestbook        { name, msg }  — rate-limited, no links, length-capped
  *   DELETE /guestbook/:id    hide a message (header  X-Admin-Key: <ADMIN_KEY secret>)
+ *   POST   /guestbook/:id/pin    pin / unpin a message ({ pinned: true|false }, same header)
  */
 
 const DISCORD_ID = "1198196468272603196";
 const ORIGINS = ["https://ayka.dev", "https://www.ayka.dev", "http://localhost:8765", "http://127.0.0.1:8765"];
 const HISTORY_KEEP = 50;
-const BOOK_PAGE = 60;
+const BOOK_PAGE = 25;
 
 export default {
 	async fetch(req, env, ctx) {
@@ -61,10 +62,14 @@ export default {
 			}
 
 			if (path === "/guestbook" && req.method === "GET") {
-				const { results } = await env.DB.prepare(
-					"SELECT id, name, msg, at FROM guestbook WHERE hidden = 0 ORDER BY id DESC LIMIT ?"
+				/* pinned messages first (always shown), then the latest ones */
+				const pinned = await env.DB.prepare(
+					"SELECT id, name, msg, at, 1 AS pinned FROM guestbook WHERE hidden = 0 AND pinned > 0 ORDER BY pinned DESC"
+				).all();
+				const latest = await env.DB.prepare(
+					"SELECT id, name, msg, at, 0 AS pinned FROM guestbook WHERE hidden = 0 AND pinned = 0 ORDER BY at DESC LIMIT ?"
 				).bind(BOOK_PAGE).all();
-				return json({ messages: results }, 200, { "Cache-Control": "no-store" });
+				return json({ messages: pinned.results.concat(latest.results) }, 200, { "Cache-Control": "no-store" });
 			}
 
 			if (path === "/guestbook" && req.method === "POST") {
@@ -89,6 +94,15 @@ export default {
 
 				const r = await env.DB.prepare("INSERT INTO guestbook (name, msg, at, iphash) VALUES (?, ?, ?, ?)").bind(name, msg, now, who).run();
 				return json({ message: { id: r.meta.last_row_id, name, msg, at: now } }, 201);
+			}
+
+			const pin = path.match(/^\/guestbook\/(\d+)\/pin$/);
+			if (pin && req.method === "POST") {
+				if (!env.ADMIN_KEY || req.headers.get("X-Admin-Key") !== env.ADMIN_KEY) return json({ error: "forbidden" }, 403);
+				let on = true;
+				try { on = (await req.json()).pinned !== false; } catch {}
+				await env.DB.prepare("UPDATE guestbook SET pinned = ? WHERE id = ?").bind(on ? Date.now() : 0, +pin[1]).run();
+				return json({ ok: true, pinned: on });
 			}
 
 			const del = path.match(/^\/guestbook\/(\d+)$/);

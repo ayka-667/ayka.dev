@@ -376,6 +376,10 @@ p{margin:.6em 0}
 .gb-list .nm{color:var(--blue)}
 .gb-list .del{color:var(--dim);margin-left:1ch}
 .gb-list .del:hover{color:var(--red)}
+.gb-list .pin{color:var(--dim);margin-left:1ch}
+.gb-list .pin:hover{color:var(--purple)}
+.gb-list li.pinned{padding:.15em .8ch;margin:.15em -.8ch .5em;background:rgba(210,168,255,.07);border-left:2px solid var(--purple)}
+.gb-list .pn{color:var(--purple)}
 .gb-list li.new{animation:gbnew 1.6s ease}
 @keyframes gbnew{from{background:rgba(126,231,135,.18)}to{background:transparent}}
 .gb-form{display:grid;grid-template-columns:auto 1fr;gap:.35em 1ch;align-items:center}
@@ -2772,10 +2776,14 @@ function gbDate(at){
 	return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toLowerCase() + " " +
 		d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 }
+var GB_MAX = 25;
 function gbItem(m, isNew){
-	return '<li data-id="' + m.id + '"' + (isNew ? ' class="new"' : "") + '><span class="ts">[' + gbDate(m.at) + ']</span> <span class="nm">' +
-		esc(m.name) + '</span><span class="dim">:</span> ' + esc(m.msg) +
-		(adminKey ? '<button type="button" class="del" title="hide this message">[x]</button>' : "") + "</li>";
+	var cls = (m.pinned ? "pinned" : "") + (isNew ? " new" : "");
+	return '<li data-id="' + m.id + '"' + (cls.trim() ? ' class="' + cls.trim() + '"' : "") + ">" +
+		(m.pinned ? '<span class="pn">[pinned]</span> ' : "") +
+		'<span class="ts">[' + gbDate(m.at) + ']</span> <span class="nm">' + esc(m.name) + '</span><span class="dim">:</span> ' + esc(m.msg) +
+		(adminKey ? '<button type="button" class="pin" data-on="' + (m.pinned ? 0 : 1) + '" title="' + (m.pinned ? "unpin" : "pin to the top") + '">[' + (m.pinned ? "unpin" : "pin") + "]</button>" +
+			'<button type="button" class="del" title="hide this message">[x]</button>' : "") + "</li>";
 }
 function loadBook(){
 	api("/guestbook").then(function(j){
@@ -2796,7 +2804,12 @@ gbForm.addEventListener("submit", function(e){
 			gbSay("✓ thanks!", "ok");
 			if (j.message){
 				if (!gbList.querySelector("li[data-id]")) gbList.innerHTML = "";
-				gbList.insertAdjacentHTML("afterbegin", gbItem(j.message, true));
+				/* new message goes right under the pinned ones; keep only the latest GB_MAX */
+				var pins = gbList.querySelectorAll("li.pinned"), after = pins[pins.length - 1];
+				if (after) after.insertAdjacentHTML("afterend", gbItem(j.message, true));
+				else gbList.insertAdjacentHTML("afterbegin", gbItem(j.message, true));
+				var rest = gbList.querySelectorAll("li[data-id]:not(.pinned)");
+				for (var k = GB_MAX; k < rest.length; k++) rest[k].remove();
 				gbList.scrollTop = 0;
 			}
 			try { localStorage.setItem("ayka-gb-name", name); } catch (err){}
@@ -2805,6 +2818,13 @@ gbForm.addEventListener("submit", function(e){
 		.then(function(){ gbSend.disabled = false; setTimeout(function(){ if (gbState.className !== "err") gbSay(""); }, 3000); });
 });
 gbList.addEventListener("click", function(e){
+	var p = e.target.closest(".pin");
+	if (p && adminKey){
+		api("/guestbook/" + p.closest("li").dataset.id + "/pin", { method: "POST",
+			headers: { "X-Admin-Key": adminKey, "Content-Type": "application/json" }, body: JSON.stringify({ pinned: p.dataset.on === "1" }) })
+			.then(loadBook).catch(function(err){ gbSay(err.message, "err"); });
+		return;
+	}
 	var b = e.target.closest(".del");
 	if (!b || !adminKey) return;
 	var li = b.closest("li");

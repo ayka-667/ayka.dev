@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS guestbook (
 	msg TEXT NOT NULL,
 	at INTEGER NOT NULL,
 	iphash TEXT NOT NULL,
-	hidden INTEGER NOT NULL DEFAULT 0
+	hidden INTEGER NOT NULL DEFAULT 0,
+	pinned INTEGER NOT NULL DEFAULT 0   -- 0, or the time it was pinned
 );
 CREATE INDEX IF NOT EXISTS guestbook_ip ON guestbook (iphash, at);
 CREATE INDEX IF NOT EXISTS visits_day ON visits (day);
