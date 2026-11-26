@@ -458,7 +458,10 @@ body.revealed #bar{transform:none}
 #lp-x{color:var(--dim)}
 #lp-x:hover{color:var(--red)}
 .lp-frame{position:relative;margin:.5em 1.2ch 0;aspect-ratio:16/9;background:#000;border:1px solid #161b22}
-.lp-frame iframe,.lp-frame #lp-yt{position:absolute;inset:0;width:100%;height:100%;border:0}
+.lp-frame iframe,.lp-frame #lp-yt{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+#lp-shield{position:absolute;inset:0;z-index:1;cursor:default}
+#lp[data-state="blocked"] #lp-shield{cursor:pointer;background:rgba(0,0,0,.45)}
+#lp[data-state="blocked"] #lp-shield::after{content:"[ ▶ click to start ]";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1ed760;font-weight:700}
 .lp-info{padding:.5em 1.2ch .7em;min-width:0}
 #lp-title{color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lp-state a{color:var(--fg)}
@@ -608,7 +611,7 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 
 <div id="lp" hidden role="region" aria-label="Listening along">
 	<div class="lp-head"><span>┌─[ <b class="rgb">listening along</b> ]</span><span class="dp-line"></span><button id="lp-x" type="button" aria-label="Stop listening">[x]</button></div>
-	<div class="lp-frame"><div id="lp-yt"></div></div>
+	<div class="lp-frame"><div id="lp-yt"></div><div id="lp-shield" aria-hidden="true"></div></div>
 	<div class="lp-info"><div id="lp-title">—</div><div id="lp-state"></div></div>
 </div>
 
@@ -2044,7 +2047,7 @@ function findVideo(t){
 
 /* ---- mini player ---- */
 var lp = document.getElementById("lp"), lpTitle = document.getElementById("lp-title"), lpState = document.getElementById("lp-state");
-var listening = false, ytPlayer = null, ytReady = null, playingKey = "", userPaused = false;
+var listening = false, ytPlayer = null, ytReady = null, playingKey = "", loadedKey = "", ayState = "", userPaused = false;
 
 function loadYT(){
 	if (ytReady) return ytReady;
@@ -2060,6 +2063,12 @@ function loadYT(){
 }
 
 function elapsed(t){ return t && t.start ? Math.max(0, (Date.now() - t.start) / 1000) : 0; }
+/* my live position in the song, or null when I'm paused (Discord drops the timestamps on pause) */
+function wantPos(t){
+	if (!t || !t.start) return null;
+	if (t.end && Date.now() > t.end + 3000) return null;
+	return Math.max(0, (Date.now() - t.start) / 1000);
+}
 
 function lpSet(state, html){
 	lpState.innerHTML = html;
@@ -2078,7 +2087,7 @@ function startListen(){
 
 function stopListen(){
 	listening = false;
-	playingKey = "";
+	playingKey = loadedKey = ayState = "";
 	if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
 	lp.classList.remove("open");
 	setTimeout(function(){ if (!listening) lp.hidden = true; }, 250);
@@ -2089,13 +2098,32 @@ function syncListen(force){
 	if (!listening) return;
 	var t = currentTrack(presence);
 	if (!t){
-		lpTitle.textContent = "—";
-		lpSet("idle", '<span class="sub">ayka stopped the music · waiting for the next song…</span>');
-		if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
-		playingKey = "";
+		if (ayState !== "stopped"){
+			ayState = "stopped";
+			lpSet("idle", '<span class="sub">ayka stopped the music · waiting for the next song…</span>');
+			if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+		}
 		return;
 	}
 	var key = trackKey(t);
+	if (key === loadedKey && ytPlayer && ytPlayer.seekTo){
+		var pos = wantPos(t);
+		if (pos === null){
+			if (ayState !== "paused"){
+				ayState = "paused";
+				ytPlayer.pauseVideo();
+				lpSet("paused", '<span class="sub">❚❚ ayka paused · it resumes with them</span>');
+			}
+		} else if (ayState !== "playing"){
+			ayState = "playing";
+			userPaused = false;
+			ytPlayer.seekTo(pos, true);
+			ytPlayer.playVideo();
+			lpSynced();
+			checkBlocked();
+		}
+		return;
+	}
 	if (key === playingKey && !force) return;
 	playingKey = key;
 	lpTitle.innerHTML = esc(t.title) + ' <span class="sub">— ' + esc(t.artist) + "</span>";
@@ -2112,7 +2140,9 @@ function syncListen(force){
 		}
 		loadYT().then(function(){
 			if (!listening || playingKey !== key) return;
-			var at = elapsed(currentTrack(presence));
+			var cur = currentTrack(presence), at = wantPos(cur) || 0;
+			loadedKey = key;
+			ayState = wantPos(cur) === null ? "paused" : "playing";
 			if (!ytPlayer){
 				/* own iframe so YouTube gets the page's origin + referrer (missing referrer = error 153) */
 				var ifr = document.createElement("iframe");
@@ -2120,18 +2150,21 @@ function syncListen(force){
 				ifr.title = "YouTube player";
 				ifr.allow = "autoplay; encrypted-media; picture-in-picture";
 				ifr.referrerPolicy = "strict-origin-when-cross-origin";
-				ifr.setAttribute("allowfullscreen", "");
-				ifr.src = "https://www.youtube.com/embed/" + id + "?enablejsapi=1&autoplay=1&playsinline=1&rel=0" +
+				ifr.src = "https://www.youtube.com/embed/" + id + "?enablejsapi=1&autoplay=1&playsinline=1&rel=0&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1" +
 					"&start=" + Math.floor(at) + "&origin=" + encodeURIComponent(location.origin) +
 					"&widget_referrer=" + encodeURIComponent(location.origin + "/");
 				var slot = document.getElementById("lp-yt");
 				slot.parentNode.replaceChild(ifr, slot);
 				ytPlayer = new YT.Player(ifr, {
 					events: {
-						onReady: function(e){ e.target.seekTo(elapsed(currentTrack(presence)), true); e.target.playVideo(); },
+						onReady: function(e){
+							var w = wantPos(currentTrack(presence));
+							if (w === null){ e.target.pauseVideo(); lpSet("paused", '<span class="sub">❚❚ ayka paused · it resumes with them</span>'); }
+							else { e.target.seekTo(w, true); e.target.playVideo(); checkBlocked(); }
+						},
 						onStateChange: function(e){
-							if (e.data === 1){ userPaused = false; lpSynced(); }
-							else if (e.data === 2) userPaused = true;
+							if (e.data === 1){ userPaused = false; if (ayState === "playing") lpSynced(); }
+							else if (e.data === 2) userPaused = ayState === "playing";   /* only a visitor pause, not ours */
 						},
 						onError: function(){
 							var tt = currentTrack(presence);
@@ -2140,13 +2173,28 @@ function syncListen(force){
 					}
 				});
 			} else {
-				ytPlayer.loadVideoById({ videoId: id, startSeconds: at });
 				userPaused = false;
+				if (ayState === "paused") ytPlayer.cueVideoById({ videoId: id, startSeconds: at });
+				else { ytPlayer.loadVideoById({ videoId: id, startSeconds: at }); checkBlocked(); }
 			}
 			lpSet("load", '<span class="sub">syncing…</span>');
 		});
 	});
 }
+
+/* autoplay with sound can be blocked: the shield then becomes a single "start" button */
+function checkBlocked(){
+	setTimeout(function(){
+		if (!listening || !ytPlayer || !ytPlayer.getPlayerState || ayState !== "playing") return;
+		if (ytPlayer.getPlayerState() !== 1) lpSet("blocked", '<span class="sub">your browser blocked autoplay · click the player</span>');
+	}, 2500);
+}
+document.getElementById("lp-shield").addEventListener("click", function(){
+	if (!ytPlayer || !ytPlayer.playVideo || ayState !== "playing" || ytPlayer.getPlayerState() === 1) return;
+	var w = wantPos(currentTrack(presence));
+	if (w !== null) ytPlayer.seekTo(w, true);
+	ytPlayer.playVideo();
+});
 
 function lpSynced(){
 	var t = currentTrack(presence);
@@ -2158,8 +2206,9 @@ function lpSynced(){
 setInterval(function(){
 	if (!listening || !ytPlayer || !ytPlayer.getPlayerState || userPaused) return;
 	var t = currentTrack(presence);
-	if (!t || trackKey(t) !== playingKey || ytPlayer.getPlayerState() !== 1) return;
-	var want = elapsed(t), have = ytPlayer.getCurrentTime();
+	if (!t || trackKey(t) !== loadedKey || ayState !== "playing" || ytPlayer.getPlayerState() !== 1) return;
+	var want = wantPos(t), have = ytPlayer.getCurrentTime();
+	if (want === null) return;
 	if (Math.abs(want - have) > 4) ytPlayer.seekTo(want, true);
 }, 4000);
 
@@ -2172,8 +2221,7 @@ function listenButtons(t){
 	return '<div class="dp-listen-row">' +
 		(listening
 			? '<button type="button" class="dp-stop">[ ■ stop listening ]</button>'
-			: '<button type="button" class="dp-listen">[ ▶ listen along ]</button>') +
-		' <a href="' + ytmSearch(t) + '" target="_blank" rel="noopener">[ ↗ yt music ]</a></div>';
+			: '<button type="button" class="dp-listen">[ ▶ listen along ]</button>') + "</div>";
 }
 
 /* ---------- github: latest public push ---------- */
