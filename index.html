@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="description" content="ayka.dev — independent developer. Tools that do one thing, and do it well.">
 <meta name="theme-color" content="#010203">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -429,6 +430,40 @@ body.revealed #bar{transform:none}
 
 #dc[aria-expanded="true"]{color:var(--hi)}
 
+.dp-listen-row{margin-top:.45em;display:flex;flex-wrap:wrap;gap:1.5ch}
+.dp-listen-row button,.dp-listen-row a{color:var(--fg);transition:color .2s}
+.dp-listen,.dp-listen-row button:hover{color:#1ed760!important}
+.dp-listen-row a:hover{color:var(--green)}
+
+/* ---------- listen-along mini player ---------- */
+#lp{
+	position:fixed;
+	right:8px;
+	bottom:34px;
+	z-index:31;
+	width:min(320px, calc(100vw - 16px));
+	background:rgba(4,6,9,.97);
+	border:1px solid #2d333b;
+	box-shadow:0 12px 40px rgba(0,0,0,.65),0 0 28px rgba(30,215,96,.08);
+	font-size:12px;
+	line-height:1.5;
+	opacity:0;
+	transform:translateY(10px);
+	transition:opacity .2s ease, transform .2s ease;
+}
+#lp.open{opacity:1;transform:none}
+.lp-head{display:flex;align-items:center;color:var(--line);padding:.3em 1ch 0}
+.lp-head b{font-weight:700}
+.lp-head .dp-line{flex:1;height:0;border-top:1px solid var(--line);margin:0 1ch}
+#lp-x{color:var(--dim)}
+#lp-x:hover{color:var(--red)}
+.lp-frame{position:relative;margin:.5em 1.2ch 0;aspect-ratio:16/9;background:#000;border:1px solid #161b22}
+.lp-frame iframe,.lp-frame #lp-yt{position:absolute;inset:0;width:100%;height:100%;border:0}
+.lp-info{padding:.5em 1.2ch .7em;min-width:0}
+#lp-title{color:var(--hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lp-state a{color:var(--fg)}
+#lp-state a:hover{color:var(--green)}
+
 /* ---------- responsive / a11y ---------- */
 
 @media (max-width:1100px){
@@ -570,6 +605,12 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 </nav>
 
 <div id="dpop" role="dialog" aria-label="Discord profile"></div>
+
+<div id="lp" hidden role="region" aria-label="Listening along">
+	<div class="lp-head"><span>┌─[ <b class="rgb">listening along</b> ]</span><span class="dp-line"></span><button id="lp-x" type="button" aria-label="Stop listening">[x]</button></div>
+	<div class="lp-frame"><div id="lp-yt"></div></div>
+	<div class="lp-info"><div id="lp-title">—</div><div id="lp-state"></div></div>
+</div>
 
 <span id="meter" aria-hidden="true" style="position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden"></span>
 
@@ -1657,6 +1698,7 @@ function renderPresence(){
 	whoTxt.innerHTML = html;
 	whoRow.hidden = false;
 	renderCard();
+	if (typeof syncListen === "function") syncListen(false);
 }
 setInterval(function(){ if (presence && (presence.listening_to_spotify || (presence.activities || []).some(function(a){ return a.type === 2; }))) renderPresence(); }, 1000);
 
@@ -1848,6 +1890,7 @@ function renderCard(){
 				"<div>by " + esc(sp.artist) + "</div>" +
 				(sp.album ? '<div class="sub">on ' + esc(sp.album) + "</div>" : "") +
 				(ts.start && ts.end ? '<div class="dp-prog js-prog" data-s="' + ts.start + '" data-e="' + ts.end + '">' + progBar(ts.start, ts.end) + "</div>" : "") +
+				listenButtons(currentTrack(p)) +
 				"</div></div>";
 		}
 		acts.forEach(function(a){
@@ -1861,7 +1904,7 @@ function renderCard(){
 			blocks += '<div class="dp-act">' +
 				(img ? asciiOrImg(img, 22, 12, false, "art") : '<pre class="dp-asc art dp-ph" aria-hidden="true">┌────┐\n│ ▶  │\n└────┘</pre>') +
 				(music
-					? '<div class="dp-info"><div class="lbl">listening on <span class="spot">' + esc((a.name || "").toLowerCase()) + "</span></div>" +
+					? '<div class="dp-info"><div class="lbl">' + (musicApp(a) ? 'listening on <span class="spot">' + esc(musicApp(a)) + "</span>" : "listening to") + "</div>" +
 						"<b>" + esc(a.details || a.name || "") + "</b>" +
 						(a.state ? "<div>by " + esc(a.state) + "</div>" : "") +
 						(a.assets && a.assets.large_text ? '<div class="sub">on ' + esc(a.assets.large_text) + "</div>" : "")
@@ -1869,7 +1912,7 @@ function renderCard(){
 						"<b>" + esc(a.name || "") + "</b>" +
 						(a.details ? "<div>" + esc(a.details) + "</div>" : "") +
 						(a.state ? '<div class="sub">' + esc(a.state) + "</div>" : "")) +
-				time + "</div></div>";
+				time + (music && a.details ? listenButtons(currentTrack(p)) : "") + "</div></div>";
 		});
 		if (!blocks) blocks = '<p class="sub dp-none">' + (st === "offline" ? "offline right now, leave a message." : "not doing anything in particular right now.") + "</p>";
 		html += '<div class="dp-sep"></div>' + blocks;
@@ -1912,6 +1955,8 @@ dcLink.addEventListener("click", function(e){
 dpop.addEventListener("click", function(e){
 	e.stopPropagation();
 	if (e.target.closest(".dp-x")) closeCard();
+	if (e.target.closest(".dp-listen")) startListen();
+	if (e.target.closest(".dp-stop")) stopListen();
 	var cp = e.target.closest(".dp-copy");
 	if (cp && presence && navigator.clipboard){
 		navigator.clipboard.writeText(presence.discord_user.username).then(function(){
@@ -1937,6 +1982,199 @@ addEventListener("resize", function(){ if (dpop.classList.contains("open")) plac
 		fav.href = "/favicons/" + icons[i] + ".svg";
 	}, 2500);
 })();
+
+
+/* ---------- listen along: plays what I'm listening to, synced, via the official YouTube player ----------
+   the song is looked up on YouTube Music through public Piped instances (no key needed);
+   if none answers, a "open on YouTube Music" link is shown instead. */
+var PIPED = [
+	"https://api.piped.private.coffee",
+	"https://pipedapi.kavin.rocks",
+	"https://pipedapi.adminforge.de",
+	"https://pipedapi.leptons.xyz",
+	"https://piped-api.lunar.icu"
+];
+
+/* the track I'm playing right now (Spotify or any music app such as Liner), or null */
+function currentTrack(p){
+	if (!p) return null;
+	if (p.listening_to_spotify && p.spotify){
+		var sp = p.spotify, ts = sp.timestamps || {};
+		return { title: sp.song, artist: (sp.artist || "").split(";")[0], start: ts.start, end: ts.end, app: "spotify" };
+	}
+	var a = (p.activities || []).filter(function(x){ return x.type === 2 && x.details; })[0];
+	if (!a) return null;
+	var t = a.timestamps || {};
+	return { title: a.details, artist: a.state || "", start: t.start, end: t.end, app: musicApp(a) };
+}
+
+/* Liner puts the artist in the activity name; the app shows up in its "Listen on X" button */
+function musicApp(a){
+	var b = (a.buttons || []).map(function(x){ return typeof x === "string" ? x : x.label || ""; })
+		.filter(function(x){ return /^listen on /i.test(x); })[0];
+	if (b) return b.replace(/^listen on /i, "").toLowerCase();
+	if (a.name && a.name !== a.state && a.name !== a.details) return a.name.toLowerCase();
+	return "";
+}
+
+function trackKey(t){ return t ? (t.title + "|" + t.artist).toLowerCase() : ""; }
+function ytmSearch(t){ return "https://music.youtube.com/search?q=" + encodeURIComponent(t.title + " " + t.artist); }
+
+var videoCache = {};
+function findVideo(t){
+	var key = trackKey(t);
+	if (videoCache[key]) return videoCache[key];
+	var q = encodeURIComponent((t.title + " " + t.artist).trim());
+	function tryAt(i, filter){
+		if (i >= PIPED.length) return Promise.resolve(null);
+		var ctl = "AbortController" in window ? new AbortController() : null;
+		var tm = setTimeout(function(){ if (ctl) ctl.abort(); }, 5000);
+		return fetch(PIPED[i] + "/search?q=" + q + "&filter=" + filter, ctl ? { signal: ctl.signal } : {})
+			.then(function(r){ clearTimeout(tm); return r.ok ? r.json() : null; })
+			.then(function(j){
+				var it = j && (j.items || []).filter(function(x){ return x.url && x.url.indexOf("/watch?v=") === 0; })[0];
+				if (it) return it.url.split("v=")[1].split("&")[0];
+				return filter === "music_songs" ? tryAt(i, "videos") : tryAt(i + 1, "music_songs");
+			}, function(){ clearTimeout(tm); return tryAt(i + 1, "music_songs"); });
+	}
+	var pr = tryAt(0, "music_songs").then(function(id){ if (!id) delete videoCache[key]; return id; });
+	videoCache[key] = pr;
+	return pr;
+}
+
+/* ---- mini player ---- */
+var lp = document.getElementById("lp"), lpTitle = document.getElementById("lp-title"), lpState = document.getElementById("lp-state");
+var listening = false, ytPlayer = null, ytReady = null, playingKey = "", userPaused = false;
+
+function loadYT(){
+	if (ytReady) return ytReady;
+	ytReady = new Promise(function(res){
+		if (window.YT && window.YT.Player) return res();
+		var prev = window.onYouTubeIframeAPIReady;
+		window.onYouTubeIframeAPIReady = function(){ if (prev) prev(); res(); };
+		var s = document.createElement("script");
+		s.src = "https://www.youtube.com/iframe_api";
+		document.head.appendChild(s);
+	});
+	return ytReady;
+}
+
+function elapsed(t){ return t && t.start ? Math.max(0, (Date.now() - t.start) / 1000) : 0; }
+
+function lpSet(state, html){
+	lpState.innerHTML = html;
+	lp.dataset.state = state;
+}
+
+function startListen(){
+	listening = true;
+	userPaused = false;
+	lp.hidden = false;
+	requestAnimationFrame(function(){ lp.classList.add("open"); });
+	loadYT();
+	syncListen(true);
+	renderCard();
+}
+
+function stopListen(){
+	listening = false;
+	playingKey = "";
+	if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+	lp.classList.remove("open");
+	setTimeout(function(){ if (!listening) lp.hidden = true; }, 250);
+	renderCard();
+}
+
+function syncListen(force){
+	if (!listening) return;
+	var t = currentTrack(presence);
+	if (!t){
+		lpTitle.textContent = "—";
+		lpSet("idle", '<span class="sub">ayka stopped the music · waiting for the next song…</span>');
+		if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+		playingKey = "";
+		return;
+	}
+	var key = trackKey(t);
+	if (key === playingKey && !force) return;
+	playingKey = key;
+	lpTitle.innerHTML = esc(t.title) + ' <span class="sub">— ' + esc(t.artist) + "</span>";
+	if (location.protocol === "file:"){
+		lpSet("miss", '<span class="sub">the player needs the site served over http(s), not opened as a file ·</span> <a href="' + ytmSearch(t) + '" target="_blank" rel="noopener">open on youtube music ↗</a>');
+		return;
+	}
+	lpSet("search", '<span class="sub">looking it up on youtube…</span>');
+	findVideo(t).then(function(id){
+		if (!listening || playingKey !== key) return;
+		if (!id){
+			lpSet("miss", '<span class="sub">couldn\'t load it here ·</span> <a href="' + ytmSearch(t) + '" target="_blank" rel="noopener">open on youtube music ↗</a>');
+			return;
+		}
+		loadYT().then(function(){
+			if (!listening || playingKey !== key) return;
+			var at = elapsed(currentTrack(presence));
+			if (!ytPlayer){
+				/* own iframe so YouTube gets the page's origin + referrer (missing referrer = error 153) */
+				var ifr = document.createElement("iframe");
+				ifr.id = "lp-yt";
+				ifr.title = "YouTube player";
+				ifr.allow = "autoplay; encrypted-media; picture-in-picture";
+				ifr.referrerPolicy = "strict-origin-when-cross-origin";
+				ifr.setAttribute("allowfullscreen", "");
+				ifr.src = "https://www.youtube.com/embed/" + id + "?enablejsapi=1&autoplay=1&playsinline=1&rel=0" +
+					"&start=" + Math.floor(at) + "&origin=" + encodeURIComponent(location.origin) +
+					"&widget_referrer=" + encodeURIComponent(location.origin + "/");
+				var slot = document.getElementById("lp-yt");
+				slot.parentNode.replaceChild(ifr, slot);
+				ytPlayer = new YT.Player(ifr, {
+					events: {
+						onReady: function(e){ e.target.seekTo(elapsed(currentTrack(presence)), true); e.target.playVideo(); },
+						onStateChange: function(e){
+							if (e.data === 1){ userPaused = false; lpSynced(); }
+							else if (e.data === 2) userPaused = true;
+						},
+						onError: function(){
+							var tt = currentTrack(presence);
+							if (tt) lpSet("miss", '<span class="sub">this one cannot be embedded ·</span> <a href="' + ytmSearch(tt) + '" target="_blank" rel="noopener">open on youtube music ↗</a>');
+						}
+					}
+				});
+			} else {
+				ytPlayer.loadVideoById({ videoId: id, startSeconds: at });
+				userPaused = false;
+			}
+			lpSet("load", '<span class="sub">syncing…</span>');
+		});
+	});
+}
+
+function lpSynced(){
+	var t = currentTrack(presence);
+	if (!t) return;
+	lpSet("sync", '<span class="spot">●</span> <span class="sub">synced with ayka' + (t.app ? " · on " + esc(t.app) : "") + "</span>");
+}
+
+/* keep in step: re-seek if we drift more than 4 s (unless the visitor paused on purpose) */
+setInterval(function(){
+	if (!listening || !ytPlayer || !ytPlayer.getPlayerState || userPaused) return;
+	var t = currentTrack(presence);
+	if (!t || trackKey(t) !== playingKey || ytPlayer.getPlayerState() !== 1) return;
+	var want = elapsed(t), have = ytPlayer.getCurrentTime();
+	if (Math.abs(want - have) > 4) ytPlayer.seekTo(want, true);
+}, 4000);
+
+document.getElementById("lp-x").addEventListener("click", function(e){ e.stopPropagation(); stopListen(); });
+lp.addEventListener("click", function(e){ e.stopPropagation(); });
+
+/* buttons shown under the song in the discord card */
+function listenButtons(t){
+	if (!t) return "";
+	return '<div class="dp-listen-row">' +
+		(listening
+			? '<button type="button" class="dp-stop">[ ■ stop listening ]</button>'
+			: '<button type="button" class="dp-listen">[ ▶ listen along ]</button>') +
+		' <a href="' + ytmSearch(t) + '" target="_blank" rel="noopener">[ ↗ yt music ]</a></div>';
+}
 
 /* ---------- github: latest public push ---------- */
 function ago(iso){
