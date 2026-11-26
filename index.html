@@ -805,6 +805,11 @@ noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding
 "use strict";
 
 var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* a reload must start from the top: the browser would otherwise restore the old scroll position
+   and the intro would play behind the content boxes */
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+scrollTo(0, 0);
+addEventListener("load", function(){ if (phase !== "site") scrollTo(0, 0); });
 /* lite mode: lower resolution and frame rate on weak devices, data saver, or small touch screens.
    the visitor can force it on/off from the footer (saved). */
 var liteSaved = null;
@@ -1702,6 +1707,7 @@ liteBtn.addEventListener("click", function(e){
 drawLite();
 
 function boot(){
+	scrollTo(0, 0);
 	measureFont();
 	buildTextures();
 	layout();

@@ -14,7 +14,7 @@ const HISTORY_KEEP = 50;
 const BOOK_PAGE = 60;
 
 export default {
-	async fetch(req, env) {
+	async fetch(req, env, ctx) {
 		const url = new URL(req.url);
 		const origin = req.headers.get("Origin") || "";
 		const cors = {
@@ -48,10 +48,16 @@ export default {
 			}
 
 			if (path === "/history" && req.method === "GET") {
+				/* don't rely on the cron alone: check Lanyard here too, at most every 45 s */
+				const lc = await env.DB.prepare("SELECT value FROM counters WHERE name = 'lastcheck'").first();
+				if (!lc || Date.now() - lc.value > 45_000) {
+					await env.DB.prepare("INSERT INTO counters (name, value) VALUES ('lastcheck', ?) ON CONFLICT(name) DO UPDATE SET value = excluded.value").bind(Date.now()).run();
+					await Promise.race([recordTrack(env).catch(() => {}), new Promise((r) => setTimeout(r, 2500))]);
+				}
 				const { results } = await env.DB.prepare(
 					"SELECT title, artist, album, art, app, link, started, seen FROM tracks ORDER BY seen DESC LIMIT 12"
 				).all();
-				return json({ tracks: results }, 200, { "Cache-Control": "public, max-age=30" });
+				return json({ tracks: results }, 200, { "Cache-Control": "no-store" });
 			}
 
 			if (path === "/guestbook" && req.method === "GET") {
@@ -101,7 +107,8 @@ export default {
 
 	/* every minute: note what I'm listening to; once a day: forget old visit hashes */
 	async scheduled(event, env, ctx) {
-		ctx.waitUntil(recordTrack(env));
+		ctx.waitUntil(recordTrack(env).then(() =>
+			env.DB.prepare("INSERT INTO counters (name, value) VALUES ('lastcheck', ?) ON CONFLICT(name) DO UPDATE SET value = excluded.value").bind(Date.now()).run()));
 		if (event.cron === "0 4 * * *" || new Date().getUTCMinutes() === 0) {
 			const day = new Date().toISOString().slice(0, 10);
 			ctx.waitUntil(env.DB.prepare("DELETE FROM visits WHERE day < ?").bind(day).run());
