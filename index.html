@@ -4,912 +4,2079 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ayka.dev</title>
-<link rel="icon" href="https://troll-web-site.vercel.app/triplet.png">
-<meta name="description" content="ayka.dev — mini portfolio.">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" id="fav" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="ayka.dev — independent developer. Tools that do one thing, and do it well.">
+<meta name="theme-color" content="#010203">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
+:root{
+	--bg:#010203;
+	--fg:#c9d1d9;
+	--hi:#f0f6fc;
+	--dim:#6e7681;
+	--line:#2d333b;
+	--green:#7ee787;
+	--blue:#79c0ff;
+	--purple:#d2a8ff;
+	--red:#ff7b72;
+	--cw:9px;
+	--lh:1.6em;
+	--font:"JetBrains Mono","Cascadia Mono",Consolas,Menlo,monospace;
+}
+
+*{box-sizing:border-box}
+
+html{background:var(--bg);scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+
 body{
-	margin:40px auto;
-	padding:0 16px;
-	max-width:760px;
-	line-height:1.4;
-	font-size:18px;
-	font-family:"Lucida Console", monospace;
-	background-color:transparent;
-	color:white;
-	text-align:center;
+	margin:0;
+	color:var(--fg);
+	background:var(--bg);
+	font:15px/1.6 var(--font);
+	overflow-x:hidden;
+	-webkit-font-smoothing:antialiased;
+}
+
+
+::selection{background:var(--purple);color:#000}
+
+a{color:var(--hi);text-decoration:none}
+
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+
+.green{color:var(--green)}
+.blue{color:var(--blue)}
+.purple{color:var(--purple)}
+.dim{color:var(--dim)}
+
+/* =========================================================
+   ASCII STAGE  (eye → space, rendered on canvas)
+   ========================================================= */
+
+#stage{
+	position:fixed;
+	inset:0;
+	z-index:0;
+	isolation:isolate;
+	overflow:hidden;
+	background:#000;
+	transition:opacity 1.8s ease;
+}
+
+#stage canvas{position:absolute;display:block}
+
+/* glyphs are white on black; this layer multiplies the colour in */
+#tint{
+	mix-blend-mode:multiply;
+	image-rendering:crisp-edges;
+	image-rendering:pixelated;
+}
+
+/* skip hint during intro */
+#skip{
+	position:fixed;
+	left:50%;
+	bottom:2.4em;
+	z-index:35;
+	transform:translateX(-50%);
+	font-size:12px;
+	color:var(--dim);
+	opacity:0;
+	pointer-events:none;
+	transition:opacity .6s ease, color .2s;
+}
+
+body.intro #skip{opacity:.85;pointer-events:auto}
+#skip:hover{color:var(--hi)}
+
+/* =========================================================
+   SITE
+   ========================================================= */
+
+#site{
+	position:relative;
+	z-index:10;
+	width:min(88ch, calc(100vw - 28px));
+	margin:0 auto;
+	padding-bottom:7em;
+}
+
+/* ---------- first screen: only the animation ---------- */
+
+.hero{
+	position:relative;
+	height:100vh;
+	height:100svh;
+}
+
+.down{
+	position:absolute;
+	left:50%;
+	bottom:3.2em;
+	transform:translateX(-50%);
+	color:var(--dim);
+	font-size:13px;
+	white-space:nowrap;
+	opacity:0;
+	transition:opacity 1s ease .6s, color .2s;
+}
+
+body.revealed .down{opacity:1;animation:bob 2.4s ease-in-out infinite}
+body.scrolled .down{opacity:0;pointer-events:none;transition:opacity .4s ease}
+.down:hover{color:var(--hi)}
+
+@keyframes bob{50%{transform:translate(-50%,6px)}}
+
+/* ---------- ascii boxes ---------- */
+
+.box{
 	position:relative;
 	isolation:isolate;
+	width:calc(var(--n, 60) * var(--cw));
+	margin:5em auto 0;
+	scroll-margin-top:3em;
 }
 
-/* =========================
-   CLICK TO ENTER
-   ========================= */
-
-#enter-screen{
-	position:fixed;
-	inset:0;
-	z-index:1000;
-
-	display:flex;
-	align-items:center;
-	justify-content:center;
-
-	/* Transparent pour voir la vidéo */
-	background:transparent;
-
-	cursor:pointer;
-
-	transition:opacity .8s ease, visibility .8s ease;
-}
-
-#enter-screen.hidden{
-	opacity:0;
-	visibility:hidden;
-	pointer-events:none;
-}
-
-#enter-text{
-	font-family:"Lucida Console", monospace;
-	font-size:16px;
-
-	/* Même effet RGB que la bannière */
-	background:linear-gradient(
-		90deg,
-		#7ee787,
-		#79c0ff,
-		#d2a8ff,
-		#ff7b72,
-		#7ee787
-	);
-
-	background-size:300% 100%;
-
-	-webkit-background-clip:text;
-	background-clip:text;
-
-	color:transparent;
-
-	animation:hue 8s linear infinite;
-
-	filter:drop-shadow(
-		0 0 6px rgba(121,192,255,.35)
-	);
-
-	transition:transform .25s, filter .25s;
-}
-
-#enter-screen:hover #enter-text{
-	transform:scale(1.05);
-
-	filter:drop-shadow(
-		0 0 12px rgba(121,192,255,.7)
-	);
-}
-
-
-/* =========================
-   CACHE LE SITE AVANT LE CLIC
-   ========================= */
-
-/*
- * Tout ce qui appartient au site est caché
- * avant que l'utilisateur clique.
- *
- * La vidéo, son overlay et le Click to Enter
- * restent visibles.
- */
-
-body:not(.entered) > pre,
-body:not(.entered) > .tagline,
-body:not(.entered) > .fade{
-	opacity:0;
-	visibility:hidden;
-	pointer-events:none;
-}
-
-/*
- * Après le clic, le contenu apparaît doucement.
- */
-
-body.entered > pre,
-body.entered > .tagline,
-body.entered > .fade{
-	visibility:visible;
-	opacity:1;
-}
-
-body.entered > pre,
-body.entered > .tagline{
-	transition:opacity .9s ease;
-}
-
-body.entered > .fade{
-	transition:
-		opacity .7s ease,
-		transform .7s ease;
-}
-
-
-/* =========================
-   VIDEO BACKGROUND
-   ========================= */
-
-#background-video{
-	position:fixed;
-
-	top:-20px;
-	left:-20px;
-
-	width:calc(100% + 40px);
-	height:calc(100% + 40px);
-
-	object-fit:cover;
-
-	/* Flou */
-	filter:blur(8px);
-
-	pointer-events:none;
-
-	z-index:-2;
-
-	/* Évite que le navigateur optimise trop le rendu */
-	will-change:transform;
-}
-
-/* Couche sombre légère */
-#video-overlay{
-	position:fixed;
-	inset:0;
-
-	background:rgba(0,0,0,.55);
-
-	pointer-events:none;
-
-	z-index:-1;
-}
-
-
-/* =========================
-   TON CSS ORIGINAL
-   ========================= */
-
-a{
-	color:grey;
-	text-decoration:none;
-	position:relative;
-	transition:color .25s
-}
-
-a::after{
+/* dark panel behind the box, inset to the middle of the border glyphs */
+.box::before{
 	content:"";
 	position:absolute;
-	left:0;
-	right:0;
-	bottom:-2px;
-	height:1px;
-	background:linear-gradient(
-		90deg,
-		#7ee787,
-		#79c0ff,
-		#d2a8ff
-	);
-	transform:scaleX(0);
-	transition:transform .3s;
+	inset:calc(var(--lh) / 2) calc(var(--cw) / 2);
+	z-index:-1;
+	background:rgba(1,2,3,.78);
+	opacity:0;
+	transition:opacity .6s ease;
 }
 
-a:hover{
-	color:white;
-	text-shadow:0 0 10px rgba(121,192,255,.6)
-}
+.box.in::before{opacity:1}
 
-a:hover::after{
-	transform:scaleX(1)
-}
-
-h1,h2,h3{
-	line-height:1.2
-}
-
-h3{
-	margin-top:2.2em
-}
-
-h3::before{
-	content:"# ";
-	color:#444
-}
-
-pre#banner{
-	font-size:12px;
-	line-height:11px;
-	margin:0 auto;
+.box-top,.box-bot{
+	height:var(--lh);
 	white-space:pre;
+	overflow:hidden;
+	color:var(--line);
+	transition:color .35s ease;
+	user-select:none;
+}
 
-	background:linear-gradient(
-		90deg,
-		#7ee787,
-		#79c0ff,
-		#d2a8ff,
-		#ff7b72,
-		#7ee787
-	);
-
+/* same animated RGB gradient as the old AYKA.DEV banner */
+.rgb,.box-top b{
+	font-weight:700;
+	background:linear-gradient(90deg,var(--green),var(--blue),var(--purple),var(--red),var(--green));
 	background-size:300% 100%;
-
 	-webkit-background-clip:text;
 	background-clip:text;
-
 	color:transparent;
-
 	animation:hue 8s linear infinite;
-
-	filter:drop-shadow(
-		0 0 6px rgba(121,192,255,.25)
-	);
+	filter:drop-shadow(0 0 6px rgba(121,192,255,.3));
 }
 
-@keyframes hue{
-	to{
-		background-position:300% 0
-	}
+@keyframes hue{to{background-position:300% 0}}
+.box-bot i{font-style:normal;color:var(--dim)}
+
+.box-body{
+	position:relative;
+	padding:.5em calc(var(--cw) * 3) .6em;
 }
 
-.tagline{
-	color:#aaa
+.box-body::before,.box-body::after{
+	content:"";
+	position:absolute;
+	top:0;
+	bottom:0;
+	width:1px;
+	background:var(--line);
+	transform:scaleY(0);
+	transform-origin:top;
+	transition:transform .6s ease, background-color .35s ease;
 }
 
-.cursor{
-	color:#7ee787;
-	animation:blink 1s steps(1) infinite
+.box-body::before{left:calc(var(--cw) / 2 - .5px)}
+.box-body::after{right:calc(var(--cw) / 2 - .5px)}
+
+.box.in .box-body::before,.box.in .box-body::after{transform:none}
+
+.box-body > *{opacity:0;transform:translateY(8px);transition:opacity .6s ease, transform .6s ease}
+.box.in .box-body > *{opacity:1;transform:none}
+.box.in .box-body > *:nth-child(2){transition-delay:.12s}
+.box.in .box-body > *:nth-child(3){transition-delay:.24s}
+
+.box:hover .box-top,.box:hover .box-bot{color:#3d6fa3}
+.box:hover .box-body::before,.box:hover .box-body::after{background:#3d6fa3}
+
+.cmd{margin:.6em 0 1em;color:var(--fg)}
+.ps{}
+.path{color:var(--blue)}
+
+p{margin:.6em 0}
+
+/* ---------- whoami ---------- */
+
+.who{display:flex;gap:3ch;align-items:flex-start}
+
+.who pre{
+	margin:0;
+	flex:none;
+	line-height:1.15;
+	font-size:12px;
+	color:var(--blue);
 }
 
-@keyframes blink{
-	50%{
-		opacity:0
-	}
+.who .txt{flex:1;min-width:0}
+
+.facts{list-style:none;padding:0;margin:1em 0 .4em}
+.facts li{display:flex}
+.facts .k{width:10ch;flex:none;color:var(--dim)}
+
+/* ---------- projects tree ---------- */
+
+.tree{margin:0 0 .2em}
+
+.node{
+	position:relative;
+	padding:0 0 1.3em calc(var(--cw) * 4);
 }
 
-.fade{
+.node::before{
+	content:"├──";
+	position:absolute;
+	left:0;
+	top:0;
+	color:var(--line);
+}
+
+.node::after{
+	content:"";
+	position:absolute;
+	left:calc(var(--cw) / 2 - .5px);
+	top:0;
+	bottom:0;
+	width:1px;
+	background:var(--line);
+}
+
+.node:last-child{padding-bottom:.2em}
+.node:last-child::before{content:"└──"}
+.node:last-child::after{bottom:auto;height:calc(var(--lh) / 2)}
+
+.nhead{display:flex;align-items:baseline;gap:1ch;min-width:0}
+
+.pname{
+	font-weight:700;
+	color:var(--hi);
+	white-space:nowrap;
+	transition:color .2s, text-shadow .2s;
+}
+
+.pname::before{content:"";display:inline-block;width:0;overflow:hidden;color:var(--green);transition:width .2s;vertical-align:bottom}
+
+.node:hover .pname{color:var(--green);text-shadow:0 0 12px rgba(126,231,135,.45)}
+.node:hover .pname::before{content:"> ";width:2ch}
+.node:hover::before{color:var(--green)}
+
+.lead{
+	flex:1;
+	min-width:2ch;
+	overflow:hidden;
+	white-space:nowrap;
+	color:var(--line);
+}
+
+.lead::after{content:"..............................................................................................................................."}
+
+.ptag{color:var(--purple);white-space:nowrap;font-size:13px}
+
+.pdesc{margin:.25em 0 0;color:#8b949e}
+
+/* ---------- contact ---------- */
+
+.kv{list-style:none;padding:0;margin:0 0 .4em}
+.kv li{display:flex;align-items:baseline;gap:1ch;margin:.3em 0}
+.kv .k{color:var(--dim);white-space:nowrap}
+.kv a{white-space:nowrap;padding:0 .5ch;margin:0 -.5ch;transition:background .2s,color .2s}
+.kv a:hover{background:rgba(126,231,135,.14);color:var(--green)}
+.kv a::before{content:"→ ";color:var(--line);transition:color .2s}
+.kv a:hover::before{color:var(--green)}
+
+/* ---------- footer ---------- */
+
+.foot{margin-top:5em;text-align:center;color:var(--dim);font-size:13px}
+.foot pre{margin:0 0 1em;color:var(--line);overflow:hidden}
+.foot a{color:var(--fg)}
+.foot a:hover,.foot button:hover{color:var(--green)}
+
+/* ---------- tmux-like status bar ---------- */
+
+#bar{
+	position:fixed;
+	left:0;
+	right:0;
+	bottom:0;
+	z-index:30;
+	display:flex;
+	align-items:center;
+	gap:1.2ch;
+	height:26px;
+	padding:0 1ch;
+	font-size:13px;
+	background:rgba(8,11,15,.92);
+	border-top:1px solid #161b22;
+	transform:translateY(100%);
+	transition:transform .6s ease .8s;
+	white-space:nowrap;
+	overflow:hidden;
+}
+
+body.revealed #bar{transform:none}
+
+#bar a,#bar button{color:var(--dim);transition:color .2s}
+#bar a:hover,#bar button:hover{color:var(--hi)}
+#bar a.tab{padding:0 .6ch}
+#bar a.tab.on{color:var(--hi)}
+#bar a.tab.on::after{content:"*";color:var(--green)}
+
+#bar .sep{color:#21262d}
+#bar .sp{flex:1;min-width:1ch}
+
+/* live discord presence */
+#dc{display:flex;align-items:center;gap:.9ch;min-width:0;flex:0 1 auto;max-width:48vw;overflow:hidden;padding-right:.4ch}
+#dc .dc-av{position:relative;flex:none;width:18px;height:18px;display:flex;align-items:center;justify-content:center}
+#dc .dc-av img{width:18px;height:18px;border-radius:50%;display:block}
+#dc .dc-av img:not([hidden]) + .dot{position:absolute;right:-2px;bottom:-2px;width:8px;height:8px;border:2px solid #080b0f;box-sizing:content-box;box-shadow:none}
+#dc b{font-weight:700;white-space:nowrap}
+#dc .txt:not(:empty)::before{content:"· ";color:var(--line)}
+#dc:hover b{filter:brightness(1.25)}
+#dc .txt{overflow:hidden;text-overflow:ellipsis}
+.dot{flex:none;display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim)}
+.dot.online{background:#3ba55d;box-shadow:0 0 6px #3ba55d}
+.dot.idle{background:#faa61a;box-shadow:0 0 6px #faa61a}
+.dot.dnd{background:#ed4245;box-shadow:0 0 6px #ed4245}
+.sub{color:#8b949e}
+.spot{color:#1ed760}
+
+#gh .repo{color:var(--fg)}
+#clock{color:var(--blue)}
+#clock .diff{color:var(--dim)}
+
+/* ---------- discord profile card ---------- */
+
+#dpop{
+	position:fixed;
+	bottom:34px;
+	left:8px;
+	z-index:32;
+	width:min(410px, calc(100vw - 16px));
+	max-height:calc(100vh - 60px);
+	overflow:auto;
+	scrollbar-width:none;
+	background:rgba(4,6,9,.97);
+	border:1px solid #2d333b;
+	box-shadow:0 12px 40px rgba(0,0,0,.65),0 0 32px rgba(121,192,255,.08);
+	font-size:13px;
+	line-height:1.5;
 	opacity:0;
-	transform:translateY(12px);
-	transition:opacity .7s,transform .7s
+	transform:translateY(10px);
+	pointer-events:none;
+	transition:opacity .2s ease, transform .2s ease;
 }
 
-.fade.in{
-	opacity:1;
-	transform:none
-}
+#dpop.open{opacity:1;transform:none;pointer-events:auto}
 
-.dim{
-	color:grey
-}
+.dp-head{display:flex;align-items:center;color:var(--line);padding:.3em 1ch 0}
+.dp-line{flex:1;height:0;border-top:1px solid var(--line);margin:0 1ch}
+.dp-x{color:var(--dim)}
+.dp-x:hover{color:var(--red)}
+.dp-body{padding:.7em 1.8ch 1em}
 
-.green{
-	color:#7ee787
-}
+.dp-top{display:flex;gap:2ch;align-items:center}
+.dp-av{position:relative;display:block;flex:none}
+.dp-asc{margin:0;font-size:5px;line-height:1.09;font-weight:700;white-space:pre;letter-spacing:0}
+.dp-asc span{display:inline}
+.dp-img.av{width:120px;height:120px;border-radius:50%;display:block}
+.dp-img.art{width:66px;height:66px;display:block}
+.dp-real{position:absolute;inset:6%;width:88%;height:88%;border-radius:50%;object-fit:cover;opacity:0;transition:opacity .3s ease}
+.dp-deco{position:absolute;inset:-6%;width:112%;height:112%;opacity:0;transition:opacity .3s ease;pointer-events:none}
+.dp-av:hover .dp-real,.dp-av:hover .dp-deco{opacity:1}
 
-ul{
-	list-style:none;
-	padding:0
-}
+.dp-id{min-width:0}
+.dp-name{display:inline;font-size:17px;font-weight:700;color:var(--hi)}
+.dp-tag{display:inline-flex;align-items:center;gap:.4ch;margin-left:.8ch;padding:0 .6ch;border:1px solid var(--line);font-size:11px;color:var(--fg);vertical-align:2px}
+.dp-tag img{width:12px;height:12px}
+.dp-st{margin-top:.2em}
+.dp-custom{margin-top:.3em;color:var(--fg)}
+.dp-emoji{width:16px;height:16px;vertical-align:-3px}
 
-/* Espace entre les projets */
-li{
-	margin:1.6em 0
+.dp-sep{border-top:1px dashed #21262d;margin:.9em 0}
+.dp-act{display:flex;gap:1.8ch;align-items:flex-start;margin:.7em 0}
+.dp-info{min-width:0;overflow:hidden}
+.dp-info b{color:var(--hi)}
+.dp-info a:hover b{color:#1ed760}
+.dp-act .lbl{font-size:11px;color:var(--dim)}
+.dp-prog{color:#1ed760;white-space:nowrap;font-size:12px;margin-top:.2em}
+.dp-ph{font-size:11px;line-height:1.15;color:var(--line)}
+.dp-none{margin:0}
+
+.dp-actions{display:flex;flex-wrap:wrap;gap:2ch}
+.dp-actions a,.dp-actions button{color:var(--fg);transition:color .2s}
+.dp-actions a:hover,.dp-actions button:hover{color:var(--green)}
+
+#dc[aria-expanded="true"]{color:var(--hi)}
+
+/* ---------- responsive / a11y ---------- */
+
+@media (max-width:1100px){
+	#bar .opt2{display:none}
 }
 
 @media (max-width:640px){
-	body{
-		font-size:16px
-	}
+	body{font-size:13px}
+	.who{flex-direction:column;gap:1em}
+	.who pre{align-self:center}
+	#bar .opt{display:none}
+	.ptag{display:none}
 }
 
 @media (prefers-reduced-motion:reduce){
-	*{
-		animation:none!important;
-		transition:none!important
-	}
-
-	.fade{
-		opacity:1;
-		transform:none
-	}
+	*,*::before,*::after{animation:none!important;transition:none!important}
 }
+
+noscript .ns{position:relative;z-index:50;max-width:70ch;margin:4em auto;padding:0 16px}
 </style>
 </head>
 
-<body>
+<body class="intro">
 
-<!-- =========================
-     CLICK TO ENTER
-     ========================= -->
-
-<div id="enter-screen">
-	<div id="enter-text">click to enter</div>
+<!-- ascii render target -->
+<div id="stage" aria-hidden="true">
+	<canvas id="glyphs"></canvas>
+	<canvas id="tint"></canvas>
 </div>
 
-
-<!-- =========================
-     VIDEO BACKGROUND
-     ========================= -->
-
-<video
-	id="background-video"
-	autoplay
-	muted
-	loop
-	playsinline
-	preload="auto"
->
-	<source src="vid.mp4" type="video/mp4">
-</video>
-
-<div id="video-overlay"></div>
-
-
-<!-- =========================
-     MUSIQUE
-     ========================= -->
+<button id="skip" type="button">[ click · scroll · esc ] skip intro</button>
 
 <audio id="music" loop preload="auto">
 	<source src="videoplayback.m4a" type="audio/mp4">
 </audio>
 
+<main id="site">
 
-<!-- =========================
-     TON CONTENU ORIGINAL
-     ========================= -->
+	<header class="hero" id="top">
+		<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">ayka.dev</h1>
+		<a class="down" href="#whoami">[ scroll ↓ ]</a>
+	</header>
 
-<pre id="banner" aria-label="AYKA.DEV"></pre>
+	<section class="box" id="whoami" data-title="whoami" data-foot="1/3">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> whoami</p>
+			<div class="who">
+<pre aria-hidden="true">   .-""""-.
+  /  .--.  \
+ |  ( @  )  |
+  \  '--'  /
+   '-....-'</pre>
+				<div class="txt">
+					<p>Ayka — developer. I like building simple tools that do one thing, and do it well.</p>
+					<ul class="facts">
+						<li><span class="k">role</span><span>independent developer</span></li>
+						<li><span class="k">builds</span><span>tools, apps &amp; websites</span></li>
+						<li id="who-status" hidden><span class="k">status</span><span><span class="dot" id="who-dot"></span> <span id="who-txt"></span></span></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
 
-<p class="tagline">
-	<i id="tag"></i>
-	<span class="cursor">_</span>
-</p>
+	<section class="box" id="projects" data-title="projects" data-foot="2/3">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> tree ~/projects</p>
+			<div class="tree">
+				<div class="node">
+					<div class="nhead">
+						<a class="pname" href="https://www.steamtools.app" target="_blank" rel="noopener">steamtools.app</a>
+						<span class="lead" aria-hidden="true"></span>
+						<span class="ptag">[ web ]</span>
+					</div>
+					<p class="pdesc">powerful AIO software for Steam: manifest provider, Lua files, game fixes and portable builds, all in one.</p>
+				</div>
+				<div class="node">
+					<div class="nhead">
+						<a class="pname" href="https://github.com/ayka-667/SysDVRClient-PS4" target="_blank" rel="noopener">SysDVR PS4</a>
+						<span class="lead" aria-hidden="true"></span>
+						<span class="ptag">[ github ]</span>
+					</div>
+					<p class="pdesc">stream your Nintendo Switch to the TV through a PS4, over Wi-Fi or USB cable, with low latency.</p>
+				</div>
+				<div class="node">
+					<div class="nhead">
+						<a class="pname" href="https://www.yourstake.info/" target="_blank" rel="noopener">YourStake</a>
+						<span class="lead" aria-hidden="true"></span>
+						<span class="ptag">[ web ]</span>
+					</div>
+					<p class="pdesc">free casino games with play money, live multiplayer and chat.</p>
+				</div>
+			</div>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
 
-<div class="fade">
-<p><span class="green">$</span> whoami</p>
-<!-- TODO: your intro -->
-<p>
-	Ayka — developer. I like building simple tools that do one thing, and do it well.
-</p>
-</div>
+	<section class="box" id="contact" data-title="contact" data-foot="3/3">
+		<div class="box-top" aria-hidden="true"></div>
+		<div class="box-body">
+			<p class="cmd"><span class="ps rgb">ayka@dev</span><span class="dim">:</span><span class="path">~</span><span class="dim">$</span> cat contact.txt</p>
+			<ul class="kv">
+				<li><span class="k">mail</span><span class="lead" aria-hidden="true"></span><a href="mailto:contact@ayka.dev">contact@ayka.dev</a></li>
+				<li><span class="k">github</span><span class="lead" aria-hidden="true"></span><a href="https://github.com/ayka-667/" target="_blank" rel="noopener">ayka-667</a></li>
+				<li><span class="k">discord</span><span class="lead" aria-hidden="true"></span><a href="https://discord.com/users/1198196468272603196" target="_blank" rel="noopener">profile</a></li>
+				<li><span class="k">guns.lol</span><span class="lead" aria-hidden="true"></span><a href="https://guns.lol/ayka" target="_blank" rel="noopener">/ayka</a></li>
+			</ul>
+		</div>
+		<div class="box-bot" aria-hidden="true"></div>
+	</section>
 
-<div class="fade">
-<h3>Latest projects</h3>
+	<footer class="foot">
+		<pre id="footline" aria-hidden="true"></pre>
+		<p>ayka.dev · <span id="year">2026</span> · <button id="replay" type="button">[ r ] replay intro</button></p>
+	</footer>
 
-<ul>
-	<li>
-		<a
-			href="https://www.steamtools.app"
-			target="_blank"
-			rel="noopener"
-		>
-			steamtools.app
-		</a>
+</main>
 
-		<span class="dim">
-			— powerful AIO software for Steam: manifest provider,
-			Lua files, game fixes and portable builds, all in one
-		</span>
-	</li>
-
-	<li>
-		<a
-			href="https://github.com/ayka-667/SysDVRClient-PS4"
-			target="_blank"
-			rel="noopener"
-		>
-			SysDVR PS4
-		</a>
-
-		<span class="dim">
-			— stream your Nintendo Switch to the TV through a PS4,
-			over Wi-Fi or USB cable, with low latency
-		</span>
-	</li>
-
-	<li>
-		<a
-			href="https://www.yourstake.info/"
-			target="_blank"
-			rel="noopener"
-		>
-			YourStake
-		</a>
-
-		<span class="dim">
-			— Free casino games with play money, live multiplayer and chat.
-		</span>
-	</li>
-</ul>
-</div>
-
-<div class="fade">
-<h3>Contact</h3>
-
-<p>
-	<a href="mailto:contact@ayka.dev">
-		contact@ayka.dev
+<nav id="bar" aria-label="Status bar">
+	<a id="dc" aria-haspopup="dialog" aria-expanded="false" href="https://discord.com/users/1198196468272603196" target="_blank" rel="noopener" title="discord profile">
+		<span class="dc-av"><img id="dc-img" alt="" hidden><span class="dot" id="dc-dot"></span></span>
+		<b id="dc-name" class="rgb">ayka</b><span class="txt" id="dc-txt"></span>
 	</a>
-</p>
+	<span class="sep">│</span>
+	<a class="tab opt" href="#top" data-s="top">0:home</a>
+	<a class="tab opt" href="#whoami" data-s="whoami">1:whoami</a>
+	<a class="tab opt" href="#projects" data-s="projects">2:projects</a>
+	<a class="tab opt" href="#contact" data-s="contact">3:contact</a>
+	<span class="sp"></span>
+	<a id="gh" class="opt2" href="https://github.com/ayka-667/" target="_blank" rel="noopener" hidden></a>
+	<span class="sep opt2" id="gh-sep" hidden>│</span>
+	<button id="mail" class="opt" type="button" title="copy email address">✉ copy mail</button>
+	<span class="sep opt">│</span>
+	<button id="snd" type="button" hidden>♪ on</button>
+	<span id="clock"></span>
+</nav>
 
-<p>
-	<a
-		href="https://github.com/ayka-667/"
-		target="_blank"
-		rel="noopener"
-	>
-		github
-	</a>
-	·
-	<a
-		href="https://discord.com/users/1198196468272603196"
-		target="_blank"
-		rel="noopener"
-	>
-		discord
-	</a>
-	·
-	<a
-		href="https://guns.lol/ayka"
-		target="_blank"
-		rel="noopener"
-	>
-		guns.lol
-	</a>
-</p>
-</div>
+<div id="dpop" role="dialog" aria-label="Discord profile"></div>
 
+<span id="meter" aria-hidden="true" style="position:absolute;left:-9999px;top:0;white-space:pre;visibility:hidden"></span>
+
+<noscript>
+	<style>#skip,#stage,.hero{display:none}</style>
+</noscript>
 
 <script>
+(function(){
+"use strict";
 
-var reduce = matchMedia(
-	"(prefers-reduced-motion: reduce)"
-).matches;
+var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+var CANVAS_FONT = '"JetBrains Mono","Cascadia Mono",Consolas,Menlo,monospace';
 
+/* =====================================================================
+   EYE → SPACE  —  JavaScript port of iremcnar/eyeTutorial (eye.py)
+   Everything is procedural: noise textures + maths → brightness →
+   character ramp. Glyphs are drawn white, colour is multiplied on top.
+   ===================================================================== */
 
-/* =========================
-   CLICK TO ENTER + MUSIQUE
-   ========================= */
+/* ---------- timeline (shortened for a website intro) ---------- */
+var T_OPEN   = 0.5;
+var T_OPEN_D = 2.0;
+var T_BLINK  = 3.3;
+var T_Z0     = 4.4;    // zoom starts
+var T_ZD     = 8.5;    // zoom duration
+var ZEND     = 14.0;
+var T_SPACE  = T_Z0 + T_ZD;
 
-var enterScreen = document.getElementById("enter-screen");
-var music = document.getElementById("music");
+/* ---------- eye geometry ---------- */
+var WO = 0.78, HU = 0.30, HL = 0.20, RI = 0.27, RP0 = 0.098, GS0 = 0.085;
 
-/*
- * La vidéo démarre immédiatement,
- * mais elle reste complètement muette.
- *
- * Le son de la page vient uniquement
- * de videoplayback.m4a.
- */
+var RAMP = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+var NR = RAMP.length - 1;
+var CI = {};
+for (var _i = 0; _i < RAMP.length; _i++) CI[RAMP[_i]] = _i;
 
-enterScreen.addEventListener("click", function(){
+var TAU = Math.PI * 2, NA = 4096;
 
-	/* Autorisation de lecture audio après interaction */
-	music.play().catch(function(error){
-		console.log(
-			"Impossible de lancer la musique :",
-			error
-		);
+/* nebula palette (matches the site gradient: purple core, blue halo, green filaments) */
+var DEEP  = [0.30, 0.18, 0.82];
+var LIGHT = [0.80, 0.66, 1.00];
+var HALO  = [0.10, 0.26, 0.85];
+var RIMC  = [0.30, 0.88, 0.62];
+
+function mulberry(a){
+	return function(){
+		a |= 0; a = a + 0x6D2B79F5 | 0;
+		var t = Math.imul(a ^ a >>> 15, 1 | a);
+		t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+		return ((t ^ t >>> 14) >>> 0) / 4294967296;
+	};
+}
+var rnd = mulberry(5), prnd = mulberry(9);
+function uni(r, a, b){ return a + (b - a) * r(); }
+
+function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+function ss(a, b, x){ var t = (x - a) / (b - a); t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
+function ease(t){ t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
+function zp(t){ return ease((t - T_Z0) / T_ZD); }
+
+/* ---------- procedural textures ---------- */
+var TS, TG, TW, TV, TV2, A1, A2, A3, A4;
+
+function up2add(out, n, g, amp){
+	var b = new Float32Array(g * g), k, j, x, y;
+	for (k = 0; k < g * g; k++) b[k] = rnd();
+	var i0 = new Int32Array(n), i1 = new Int32Array(n), f = new Float32Array(n);
+	for (k = 0; k < n; k++){
+		var p = k * g / n, a = Math.floor(p), ff = p - a;
+		i0[k] = a % g; i1[k] = (i0[k] + 1) % g; f[k] = ff * ff * (3 - 2 * ff);
+	}
+	var tmp = new Float32Array(g * n);
+	for (j = 0; j < g; j++){
+		var o = j * n, bo = j * g;
+		for (k = 0; k < n; k++) tmp[o + k] = b[bo + i0[k]] * (1 - f[k]) + b[bo + i1[k]] * f[k];
+	}
+	for (y = 0; y < n; y++){
+		var r0 = i0[y] * n, r1 = i1[y] * n, fy = f[y], oo = y * n;
+		for (x = 0; x < n; x++) out[oo + x] += amp * (tmp[r0 + x] * (1 - fy) + tmp[r1 + x] * fy);
+	}
+}
+
+function norm(a, k){
+	var s = 0, i, n = a.length;
+	for (i = 0; i < n; i++) s += a[i];
+	var mean = s / n, q = 0;
+	for (i = 0; i < n; i++){ var d = a[i] - mean; q += d * d; }
+	var den = Math.sqrt(q / n) * k + 1e-9;
+	for (i = 0; i < n; i++) a[i] = clamp01(0.5 + (a[i] - mean) / den);
+	return a;
+}
+
+function tex2d(n, grids){
+	var out = new Float32Array(n * n), amp = 1;
+	for (var i = 0; i < grids.length; i++){ up2add(out, n, grids[i], amp); amp *= 0.55; }
+	return norm(out, 4);
+}
+
+function noise1d(n, g){
+	var base = new Float32Array(g), o = new Float32Array(n), k;
+	for (k = 0; k < g; k++) base[k] = rnd();
+	for (k = 0; k < n; k++){
+		var p = k * g / n, a = Math.floor(p), i0 = a % g, i1 = (i0 + 1) % g, f = p - a;
+		f = f * f * (3 - 2 * f);
+		o[k] = base[i0] * (1 - f) + base[i1] * f;
+	}
+	return o;
+}
+
+function fold(a){ for (var i = 0; i < a.length; i++) a[i] = 1 - Math.abs(2 * a[i] - 1); return a; }
+
+function combo(w, gs){
+	var out = new Float32Array(NA);
+	for (var j = 0; j < gs.length; j++){
+		var nz = noise1d(NA, gs[j]);
+		for (var i = 0; i < NA; i++) out[i] += w[j] * nz[i];
+	}
+	return norm(out, 3);
+}
+
+function bil(T, n, u, v){
+	var m = n - 1, u0 = Math.floor(u), v0 = Math.floor(v), fu = u - u0, fv = v - v0;
+	var i0 = u0 & m, j0 = v0 & m, i1 = (i0 + 1) & m, j1 = (j0 + 1) & m;
+	var r0 = j0 * n, r1 = j1 * n;
+	return (T[r0 + i0] * (1 - fu) + T[r0 + i1] * fu) * (1 - fv) + (T[r1 + i0] * (1 - fu) + T[r1 + i1] * fu) * fv;
+}
+
+function buildTextures(){
+	TS  = tex2d(1024, [6, 20, 64, 200]);
+	TG  = tex2d(1024, [8, 24, 64, 160]);
+	TW  = new Float32Array(512 * 512);
+	for (var i = 0; i < TW.length; i++) TW[i] = rnd();
+	TV  = fold(tex2d(512, [5, 12, 30]));
+	TV2 = fold(tex2d(512, [3, 7, 16]));
+	A1 = combo([0.5, 0.3, 0.2], [900, 300, 120]);
+	A2 = combo([0.5, 0.3, 0.2], [700, 200, 80]);
+	A3 = norm(noise1d(NA, 13), 3);
+	A4 = norm(noise1d(NA, 48), 3);
+}
+
+/* ---------- stars ---------- */
+var NS = 3200;
+var SX = new Float32Array(NS), SY = new Float32Array(NS), SD = new Float32Array(NS), SB = new Float32Array(NS);
+var SCR = new Float32Array(NS), SCG = new Float32Array(NS), SCB = new Float32Array(NS);
+var SPH = new Float32Array(NS), SF = new Float32Array(NS);
+(function(){
+	for (var i = 0; i < NS; i++){
+		SX[i] = uni(rnd, -1, 1); SY[i] = uni(rnd, -1, 1); SD[i] = uni(rnd, 0.06, 1);
+		SB[i] = 0.10 + 0.90 * Math.pow(rnd(), 3.5);
+		var tm = Math.pow(rnd(), 1.5);
+		SCR[i] = 0.70 + 0.30 * tm; SCG[i] = 0.82 - 0.02 * tm; SCB[i] = 1.0 - 0.45 * tm;
+		SPH[i] = uni(rnd, 0, 6.28); SF[i] = uni(rnd, 1, 3.5);
+	}
+})();
+
+/* ---------- gaze keyframes ---------- */
+var GZ = [[0, 0, 0]];
+(function(){
+	var r = mulberry(4), tc = 1.7;
+	while (tc < 40){ GZ.push([tc, uni(r, -0.045, 0.045), uni(r, -0.022, 0.02)]); tc += uni(r, 0.9, 2.4); }
+})();
+
+/* ---------- eyelashes ---------- */
+var UP_L = [], LO_L = [];
+(function(){
+	var r = mulberry(21), i;
+	for (i = 0; i < 44; i++) UP_L.push([-0.92 + 1.84 * i / 43, uni(r, 0.92, 1.08)]);
+	for (i = 0; i < 20; i++) LO_L.push([-0.70 + 1.40 * i / 19, uni(r, 0.90, 1.10)]);
+})();
+
+/* ---------- layout / buffers ---------- */
+var CW, CH, COLS, ROWS, W, H, U, SS = 2, forceSS = 0, GW, GH, N, DPR, CWP, CHP, FS;
+var Xs, Ys, RSs, RSC, HSC;
+var img, pmS, cellsR, cellsG, cellsB, idx, prev, fgR, fgG, fgB, pmc, li, vigc;
+var blA, blB, colorImg;
+var gcv = document.getElementById("glyphs"), tcv = document.getElementById("tint");
+var gctx = gcv.getContext("2d", { alpha: false }), tctx = tcv.getContext("2d");
+var atlas = document.createElement("canvas"), actx = atlas.getContext("2d");
+var charRatio = 0.6;
+
+function measureFont(){
+	actx.font = "700 100px " + CANVAS_FONT;
+	charRatio = actx.measureText("M").width / 100 || 0.6;
+}
+
+function layout(){
+	var vw = innerWidth, vh = innerHeight;
+	DPR = Math.min(window.devicePixelRatio || 1, 2);
+	var target = vw < 720 ? 80 : vw < 1200 ? 130 : 168;
+	CWP = Math.max(5, Math.round(vw / target * DPR));
+	CW = CWP / DPR;
+	FS = CW / charRatio;
+	CHP = Math.max(8, Math.round(FS * 1.12 * DPR));
+	CH = CHP / DPR;
+
+	COLS = Math.ceil(vw / CW); COLS += COLS & 1;
+	ROWS = Math.ceil(vh / CH); ROWS += ROWS & 1;
+	W = COLS * CW; H = ROWS * CH;
+	U = Math.min(H, W / 1.75);
+	N = COLS * ROWS;
+	SS = forceSS || (N > 13000 ? 1 : 2);
+	GW = COLS * SS; GH = ROWS * SS;
+
+	Xs = new Float32Array(GW); Ys = new Float32Array(GH);
+	for (var x = 0; x < GW; x++) Xs[x] = ((x + 0.5) * (CW / SS) - W / 2) / U;
+	for (var y = 0; y < GH; y++) Ys[y] = ((y + 0.5) * (CH / SS) - H / 2) / U;
+	RSs = new Float32Array(GW * GH);
+	for (y = 0; y < GH; y++) for (x = 0; x < GW; x++) RSs[y * GW + x] = Math.sqrt(Xs[x] * Xs[x] + Ys[y] * Ys[y]);
+
+	RSC = new Float32Array(N); HSC = new Float32Array(N);
+	for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++){
+		var cx = ((c + 0.5) * CW - W / 2) / U, cy = ((r + 0.5) * CH - H / 2) / U, k = r * COLS + c;
+		RSC[k] = Math.sqrt(cx * cx + cy * cy);
+		HSC[k] = ((Math.imul(r, 73856093) ^ Math.imul(c, 19349663) ^ 0x5bd1e995) >>> 0) % 1009 / 1009;
+	}
+
+	img = new Float32Array(GW * GH * 3); pmS = new Float32Array(GW * GH);
+	cellsR = new Float32Array(N); cellsG = new Float32Array(N); cellsB = new Float32Array(N);
+	idx = new Int16Array(N); prev = new Int16Array(N);
+	fgR = new Float32Array(N); fgG = new Float32Array(N); fgB = new Float32Array(N);
+	pmc = new Float32Array(N); li = new Float32Array(N); vigc = new Float32Array(N);
+	blA = new Float32Array(Math.ceil(GW / 2) * Math.ceil(GH / 2) * 3);
+	blB = new Float32Array(Math.ceil(GW / 4) * Math.ceil(GH / 4) * 3);
+
+	/* canvases */
+	var left = (vw - W) / 2 + "px", top = (vh - H) / 2 + "px";
+	gcv.width = COLS * CWP; gcv.height = ROWS * CHP;
+	tcv.width = COLS; tcv.height = ROWS;
+	[gcv, tcv].forEach(function(cv){
+		cv.style.left = left; cv.style.top = top;
+		cv.style.width = W + "px"; cv.style.height = H + "px";
 	});
+	gctx.fillStyle = "#000"; gctx.fillRect(0, 0, gcv.width, gcv.height);
+	colorImg = tctx.createImageData(COLS, ROWS);
 
-	/*
-	 * Affiche le site.
-	 */
-	document.body.classList.add("entered");
+	/* glyph atlas: one white glyph per ramp char */
+	atlas.width = RAMP.length * CWP; atlas.height = CHP;
+	actx.clearRect(0, 0, atlas.width, atlas.height);
+	actx.font = "700 " + (FS * DPR) + "px " + CANVAS_FONT;
+	actx.fillStyle = "#fff"; actx.textAlign = "center"; actx.textBaseline = "middle";
+	for (var i = 1; i < RAMP.length; i++) actx.fillText(RAMP[i], (i + 0.5) * CWP, CHP * 0.54);
+}
 
-	/* Fade out du Click to Enter */
-	enterScreen.classList.add("hidden");
+/* ---------- timeline helpers ---------- */
+function blinkC(t){
+	var d = t - T_BLINK;
+	if (d < 0 || d > 0.36) return 0;
+	if (d < 0.09) return ease(d / 0.09);
+	if (d < 0.12) return 1;
+	return 1 - ease((d - 0.12) / 0.24);
+}
 
+function lidOpen(t){
+	var k = ease((t - T_OPEN) / T_OPEN_D);
+	k = k * (1 + 0.035 * Math.sin(Math.PI * k));
+	return Math.min(1, k) * (1 - 0.985 * blinkC(t));
+}
+
+var GX = 0, GY = 0;
+function gaze(t){
+	var px = 0, py = 0, cx = 0, cy = 0, te = 0;
+	for (var i = 0; i < GZ.length; i++){
+		if (GZ[i][0] <= t){ px = cx; py = cy; cx = GZ[i][1]; cy = GZ[i][2]; te = GZ[i][0]; }
+		else break;
+	}
+	var k = ease((t - te) / 0.09);
+	var gx = px + (cx - px) * k, gy = py + (cy - py) * k;
+	gx += 0.003 * Math.sin(t * 1.3);
+	gy += 0.002 * Math.sin(t * 1.1 + 1);
+	var amp = 1 - ease((t - T_Z0) / 2.5);
+	gy -= 0.03 * blinkC(t);
+	GX = gx * amp; GY = gy * amp;
+}
+
+var LE_vu = 0, LE_vl = 0, LE_cl = 0;
+function lidEdges(u0, ou){
+	var s = u0 / WO, wu = s < -0.12 ? 0.88 : 1.12;
+	var cu = Math.pow(Math.max(0, 1 - Math.pow((s + 0.12) / wu, 2)), 0.8);
+	var cl = Math.pow(Math.max(0, 1 - (s - 0.08) * (s - 0.08)), 0.9);
+	var vc = 0.03 * cl;
+	var vl = vc + (HL * cl - vc) * (0.35 + 0.65 * ou);
+	LE_vu = vl + (-HU * cu - vl) * ou; LE_vl = vl; LE_cl = cl;
+}
+
+/* ---------- nebula ---------- */
+var NBr = 0, NBg = 0, NBb = 0;
+function nebula(xs, ys, sz, t){
+	var hx = xs / sz, hy = -ys / sz;
+	if (hx * hx + hy * hy > 17.6){ NBr = NBg = NBb = 0; return; }
+	var nC = bil(TG, 1024, hx * 16 + 400, hy * 16 + 100);
+	var nD = bil(TG, 1024, hx * 16 + 90, hy * 16 + 530);
+	var nA = bil(TG, 1024, hx * 42 + 300, hy * 42 + 700 + t * 0.8);
+	var hxw = hx + 0.40 * (nC - 0.5) + 0.05 * (nA - 0.5);
+	var hyw = hy + 0.40 * (nD - 0.5) + 0.05 * (nA - 0.5);
+	var q = Math.sqrt(hxw * hxw + hyw * hyw) / 0.80 - 1;
+	var r = 0, g = 0, b = 0;
+	if (q < 2.2){
+		var nB = bil(TG, 1024, hx * 110 + 80, hy * 110 + 200);
+		var tex = 1 + (0.62 + 0.80 * nB - 1) * 0.8;
+		var body, e = 0;
+		if (q < 0){
+			var ins = clamp01(-q / 0.80);
+			body = 0.5 + 0.5 * Math.sqrt(ins);
+			e = Math.pow(ins, 0.8);
+		} else body = Math.exp(-q * 3) * 0.5;
+		var bt = body * tex;
+		r = bt * (DEEP[0] + (LIGHT[0] - DEEP[0]) * e);
+		g = bt * (DEEP[1] + (LIGHT[1] - DEEP[1]) * e);
+		b = bt * (DEEP[2] + (LIGHT[2] - DEEP[2]) * e);
+	}
+	if (q > 0){
+		var halo = Math.exp(-Math.min(q, 10) * 1.6) * 0.20 * (0.5 + nA);
+		r += halo * HALO[0]; g += halo * HALO[1]; b += halo * HALO[2];
+	}
+	var rq = (q + 0.04) / 0.14, rim = Math.exp(-rq * rq);
+	if (rim > 0.002 || q < 0){
+		var rid = clamp01((bil(TV, 512, hxw * 120 + 50, hyw * 120 + 300 + t * 0.6) - 0.86) * 7);
+		var kr = rim * (0.20 + 0.9 * rid) * (0.5 + nA) + (q < 0 ? rid * Math.min(-q, 1) * 0.25 : 0);
+		r += kr * RIMC[0]; g += kr * RIMC[1]; b += kr * RIMC[2];
+	}
+	NBr = r; NBg = g; NBb = b;
+}
+
+/* ---------- world: stars, shooting stars, comet ---------- */
+var streaks = [];
+var WS = { nextShoot: 1e9, nextComet: 0 };
+var warp = 0, parX = 0, parY = 0, tparX = 0, tparY = 0;
+/* nebula follows the cursor (offset in eye units, eased) */
+var NFX = 0, NFY = 0, NVX = 0, NVY = 0;
+
+function resetWorld(){
+	streaks.length = 0;
+	WS.nextShoot = 1e9; WS.nextComet = T_SPACE + 1.5;
+	for (var i = 0; i < NS; i++) SD[i] = uni(rnd, 0.06, 1);
+}
+
+function updateWorld(t, dt, prog){
+	var vf = 0.010 + 0.05 * prog + (t > T_SPACE ? 0.015 : 0) + warp;
+	for (var i = 0; i < NS; i++){
+		SD[i] -= vf * dt;
+		if (SD[i] < 0.06){ SD[i] += 0.94; SX[i] = uni(rnd, -1, 1); SY[i] = uni(rnd, -1, 1); }
+	}
+	var hw = W / (2 * U), hh = H / (2 * U);
+	if (WS.nextShoot > 1e8 && t > T_SPACE - 4) WS.nextShoot = t + 1;
+	if (t > WS.nextShoot){
+		WS.nextShoot = t + (t > T_SPACE + 6 ? uni(prnd, 3.5, 8) : uni(prnd, 2.2, 4.5));
+		var ang = uni(prnd, 18, 62) * Math.PI / 180, sgn = prnd() < 0.5 ? -1 : 1, spd = uni(prnd, 0.7, 1.2);
+		streaks.push({ x: uni(prnd, -0.8, 0.8) * hw, y: uni(prnd, -0.9, -0.3) * hh,
+			vx: sgn * Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+			life: uni(prnd, 0.9, 1.4), tail: uni(prnd, 0.14, 0.26), age: 0,
+			c: [0.88, 0.94, 1.0], soft: false });
+	}
+	if (t > WS.nextComet){
+		WS.nextComet = t + 85;
+		streaks.push({ x: -hw * 1.05, y: -0.28, vx: 0.030 * hw / 0.875, vy: 0.008, life: 70, tail: 0.22, age: 0,
+			c: [0.70, 0.86, 1.0], soft: true });
+	}
+	for (i = streaks.length - 1; i >= 0; i--){
+		streaks[i].age += dt;
+		if (streaks[i].age >= streaks[i].life) streaks.splice(i, 1);
+	}
+}
+
+function put(k, ch, cr, cg, cb, a){
+	idx[k] = CI[ch]; fgR[k] = cr * a; fgG[k] = cg * a; fgB[k] = cb * a;
+}
+
+function stampStreak(s){
+	var hx = s.x + s.vx * s.age, hy = s.y + s.vy * s.age;
+	var sp = Math.hypot(s.vx, s.vy), dx = s.vx / sp, dy = s.vy / sp;
+	var fade = Math.pow(Math.sin(Math.PI * Math.min(1, s.age / s.life)), 0.7);
+	if (fade < 0.02) return;
+	var tc;
+	if (Math.abs(dy) < 0.38 * Math.abs(dx)) tc = "-";
+	else if (Math.abs(dx) < 0.38 * Math.abs(dy)) tc = "|";
+	else if (dx * dy > 0) tc = "\\";
+	else tc = "/";
+	var n = Math.max(6, (s.tail * U / (CW * 0.8)) | 0);
+	for (var k = 0; k < n; k++){
+		var f = k / n;
+		var c = Math.floor((W / 2 + (hx - dx * s.tail * f) * U) / CW);
+		var r = Math.floor((H / 2 + (hy - dy * s.tail * f) * U) / CH);
+		var b = Math.pow(1 - f, 1.3) * fade;
+		if (b < 0.08 || r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+		var kk = r * COLS + c;
+		if (pmc[kk] < 0.5) continue;
+		var ch = k === 0 ? (s.soft ? "*" : "@") : s.soft ? (b > 0.35 ? ":" : ".") : (b > 0.30 ? tc : ".");
+		put(kk, ch, s.c[0], s.c[1], s.c[2], Math.min(1, 0.3 + b) * vigc[kk]);
+	}
+}
+
+var RAYS = [];
+function stampStars(t, gs, amt, offx, offy){
+	if (amt <= 0.003) return;
+	var nb = 0, iDot = CI["."], iPlus = CI["+"], iStar = CI["*"], iAt = CI["@"];
+	for (var i = 0; i < NS; i++){
+		var d = SD[i];
+		var c = Math.floor((W * 0.5 + (SX[i] * gs / d + offx) * U) / CW);
+		if (c < 0 || c >= COLS) continue;
+		var r = Math.floor((H * 0.5 + (SY[i] * gs / d + offy) * U) / CH);
+		if (r < 0 || r >= ROWS) continue;
+		var alpha = ss(1.0, 0.82, d) * (0.80 + 0.20 * Math.sin(t * SF[i] + SPH[i])) * amt;
+		if (alpha <= 0.04) continue;
+		var k = r * COLS + c;
+		if (pmc[k] <= 0.5) continue;
+		var b = SB[i] * alpha * (1 + 0.05 / d);
+		if (!(b > li[k] * 0.7)) continue;
+		idx[k] = b < 0.20 ? iDot : b < 0.42 ? iPlus : iStar;
+		var a = clamp01(0.35 + 0.9 * b) * vigc[k];
+		fgR[k] = SCR[i] * a; fgG[k] = SCG[i] * a; fgB[k] = SCB[i] * a;
+		if (b > 0.55 && nb < 40){ RAYS[nb++] = [i, r, c, b]; }
+	}
+	for (var j = 0; j < nb; j++){
+		var ii = RAYS[j][0], rr = RAYS[j][1], cc = RAYS[j][2], bb = RAYS[j][3];
+		var kc = rr * COLS + cc, v = vigc[kc];
+		var cr = SCR[ii] * v, cg = SCG[ii] * v, cb = SCB[ii] * v;
+		idx[kc] = bb > 0.85 ? iAt : iStar;
+		var ln = (2 + 6 * (bb - 0.5)) | 0;
+		for (var q = 1; q <= ln; q++){
+			var aa = (1 - q / (ln + 1)) * bb;
+			var dv = (q >> 1) + (q > 2 ? 1 : 0);
+			var offs = [[0, q, "-"], [0, -q, "-"], [dv, 0, "|"], [-dv, 0, "|"]];
+			for (var o = 0; o < 4; o++){
+				var dr = offs[o][0], dc = offs[o][1];
+				if (dr === 0 && dc === 0) continue;
+				var r2 = rr + dr, c2 = cc + dc;
+				if (r2 < 0 || r2 >= ROWS || c2 < 0 || c2 >= COLS) continue;
+				var k2 = r2 * COLS + c2;
+				if (pmc[k2] > 0.5 && li[k2] < aa * 0.8){
+					var m2 = Math.min(1, 0.25 + aa);
+					put(k2, aa > 0.18 ? offs[o][2] : ".", cr, cg, cb, m2);
+				}
+			}
+		}
+	}
+}
+
+function pickLash(aa){
+	var ang = (Math.atan2(-Math.sin(aa), Math.cos(aa)) * 180 / Math.PI) % 180;
+	if (ang < 0) ang += 180;
+	if (ang < 25 || ang >= 155) return "-";
+	if (ang < 70) return "/";
+	if (ang < 110) return "|";
+	return "\\";
+}
+
+function drawLash(bu, bv, a0, L, curl, cr, ct, nmax, tip, z){
+	var n = Math.max(2, Math.min(nmax, (L * z * U / (CW * 0.85)) | 0));
+	var step = L / n, ue = bu, ve = bv;
+	for (var k = 0; k < n; k++){
+		var tt = k / Math.max(1, n - 1), aa = a0 + curl * tt * tt;
+		ue += Math.cos(aa) * step; ve += Math.sin(aa) * step;
+		var c = Math.floor((W / 2 + ue * z * U) / CW), r = Math.floor((H / 2 + ve * z * U) / CH);
+		if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+		var kk = r * COLS + c;
+		idx[kk] = CI[(k === n - 1 && n >= 4) ? tip : pickLash(aa)];
+		fgR[kk] = cr[0] + (ct[0] - cr[0]) * tt;
+		fgG[kk] = cr[1] + (ct[1] - cr[1]) * tt;
+		fgB[kk] = cr[2] + (ct[2] - cr[2]) * tt;
+	}
+}
+
+var UP_ROOT = [0.16, 0.10, 0.07], UP_TIP = [0.30, 0.19, 0.13];
+var LO_ROOT = [0.17, 0.11, 0.08], LO_TIP = [0.30, 0.20, 0.14];
+var DEG = Math.PI / 180;
+
+function stampLashes(z, ou){
+	if (z > 2.6) return;
+	var cl = 1 - Math.pow(ou, 0.8), i, s0, u0;
+	for (i = 0; i < UP_L.length; i++){
+		s0 = UP_L[i][0]; u0 = s0 * WO;
+		lidEdges(u0, ou);
+		var bv = LE_vu - 0.055 * s0;
+		var aOpen = (-90 + 26 * s0) * DEG;
+		var aClosed = s0 >= 0 ? (90 - 20 * s0) * DEG : (-270 - 20 * s0) * DEG;
+		var a0 = aOpen + (aClosed - aOpen) * cl;
+		var edge = Math.sqrt(Math.max(0, 1 - s0 * s0));
+		var Lh = (0.070 + 0.050 * edge) * UP_L[i][1];
+		drawLash(u0, bv, a0, Lh, -22 * s0 * DEG * (1 - cl), UP_ROOT, UP_TIP, 40, "'", z);
+	}
+	for (i = 0; i < LO_L.length; i++){
+		s0 = LO_L[i][0]; u0 = s0 * WO;
+		lidEdges(u0, ou);
+		drawLash(u0, LE_vl - 0.055 * s0, (90 - 20 * s0) * DEG, 0.034 * (0.5 + 0.8 * LE_cl) * LO_L[i][1],
+			12 * (s0 > 0 ? 1 : -1) * DEG, LO_ROOT, LO_TIP, 16, ".", z);
+	}
+}
+
+/* ---------- bloom (glow around bright areas) ---------- */
+function bloomPass(buf, f){
+	var bw = Math.ceil(GW / f), bh = Math.ceil(GH / f), n = bw * bh, i, x, y;
+	buf.fill(0, 0, n * 3);
+	for (y = 0; y < GH; y++){
+		var by = (y / f | 0) * bw;
+		for (x = 0; x < GW; x++){
+			var k3 = (y * GW + x) * 3, bi = (by + (x / f | 0)) * 3;
+			var a = img[k3] - 0.45, b = img[k3 + 1] - 0.45, c = img[k3 + 2] - 0.45;
+			if (a > 0) buf[bi] += a;
+			if (b > 0) buf[bi + 1] += b;
+			if (c > 0) buf[bi + 2] += c;
+		}
+	}
+	var inv = 1 / (f * f);
+	for (i = 0; i < n * 3; i++) buf[i] *= inv;
+	var tmp = new Float32Array(n * 3);
+	for (var it = 0; it < 2; it++){
+		for (y = 0; y < bh; y++) for (x = 0; x < bw; x++){
+			var o = (y * bw + x) * 3;
+			var l = (y * bw + Math.max(x - 1, 0)) * 3, rr = (y * bw + Math.min(x + 1, bw - 1)) * 3;
+			var u = (Math.max(y - 1, 0) * bw + x) * 3, d = (Math.min(y + 1, bh - 1) * bw + x) * 3;
+			for (var ch = 0; ch < 3; ch++)
+				tmp[o + ch] = (buf[o + ch] * 2 + buf[l + ch] + buf[rr + ch] + buf[u + ch] + buf[d + ch]) / 6;
+		}
+		buf.set(tmp);
+	}
+	return bw;
+}
+
+function bloom(){
+	var bwA = bloomPass(blA, 2), bwB = bloomPass(blB, 4);
+	for (var y = 0; y < GH; y++){
+		var ra = (y >> 1) * bwA, rb = (y >> 2) * bwB;
+		for (var x = 0; x < GW; x++){
+			var k3 = (y * GW + x) * 3, a = (ra + (x >> 1)) * 3, b = (rb + (x >> 2)) * 3;
+			img[k3]     += 0.40 * blA[a]     + 0.30 * blB[b];
+			img[k3 + 1] += 0.40 * blA[a + 1] + 0.30 * blB[b + 1];
+			img[k3 + 2] += 0.40 * blA[a + 2] + 0.30 * blB[b + 2];
+		}
+	}
+}
+
+/* ---------- one frame ---------- */
+var FULL = false;
+var AMB = [0.80, 0.45, 0.10], RUST = [0.42, 0.20, 0.06];
+
+function frame(t, dt){
+	var prog = zp(t), idle = ease(t / T_Z0);
+	var z = Math.exp(Math.log(ZEND) * prog) * (1 + 0.05 * idle + 0.004 * Math.sin(t * 0.9));
+	var zsp = t < T_SPACE ? z : ZEND * Math.exp(0.03 * Math.min(t - T_SPACE, 120));
+	var gs = Math.min(6, GS0 * Math.pow(zsp, 1.25));
+	var gh = Math.min(1.15, GS0 * Math.pow(z, 1.25));
+	var ou = lidOpen(t);
+	gaze(t);
+	var gx = GX, gy = GY;
+	var Rp = RP0 * (0.76 + 0.24 * ease((t - 1.8) / 3.5)) * (1 + 0.025 * Math.sin(1.9 * t)) * (1 + 0.30 * prog);
+	var Rps = Rp * z;
+	var full = FULL = Rps * 0.72 > 1.03;
+	var starAmt = ease((t - (T_Z0 + 1.2)) / 4.0);
+	var nebAmt = ease((t - (T_Z0 + 2.6)) / 6.5);
+	updateWorld(t, dt, prog);
+
+	var offx = gx * z, offy = gy * z;
+	var neb = nebAmt > 0.002, nebK = 1.25 * Math.pow(nebAmt, 1.3);
+	var drift = ease((t - T_SPACE) / 20);
+	var nsz = 0.17 * gh * (1 + 0.25 * drift);
+	/* glide the nebula toward the cursor once we are out in space */
+	var follow = ease((t - (T_SPACE - 2.5)) / 3);
+	var tgX = tparX * innerWidth / 2 / U * follow, tgY = tparY * innerHeight / 2 / U * follow;
+	/* critically-damped spring: eases in AND out, no snapping. lower NEB_SPEED = slower */
+	var NEB_SPEED = 0.9;
+	for (var sub = 0, h = dt / 4; sub < 4; sub++){
+		NVX += (-2 * NEB_SPEED * NVX - NEB_SPEED * NEB_SPEED * (NFX - tgX)) * h;
+		NVY += (-2 * NEB_SPEED * NVY - NEB_SPEED * NEB_SPEED * (NFY - tgY)) * h;
+		NFX += NVX * h; NFY += NVY * h;
+	}
+	var ncx = offx + NFX + 0.03 * drift * Math.sin(t * 0.07);
+	var ncy = offy + NFY;
+
+	var iz = 1 / z, px = iz * (CH / SS) / U, apx = 1.6 * px;
+	var near = z < 3.4, skinOn = near && z < 2.6;
+	var fadeC = clamp01(1 - (z - 1.6) / 2.4);
+	var lpx = 1.4 * px;
+
+	for (var jy = 0; jy < GH; jy++){
+		var Y = Ys[jy], v = Y * iz;
+		for (var jx = 0; jx < GW; jx++){
+			var X = Xs[jx], k = jy * GW + jx, k3 = k * 3;
+			var sr = 0.004, sg = 0.005, sb = 0.012;
+			if (neb){
+				nebula(X - ncx, Y - ncy, nsz, t);
+				sr += NBr * nebK; sg += NBg * nebK; sb += NBb * nebK;
+			}
+			if (full){ img[k3] = sr; img[k3 + 1] = sg; img[k3 + 2] = sb; pmS[k] = 1; continue; }
+
+			var u = X * iz, pu = u - gx, pv = v - gy, r = Math.sqrt(pu * pu + pv * pv);
+			var s = 0, vt = 0, vu = 0, vl = 0, du_in = 0, dl_in = 0, m_in = 0;
+			if (near){
+				s = u / WO;
+				var sa = s < -1.3 ? -1.3 : s > 1.3 ? 1.3 : s;
+				var wu = sa < -0.12 ? 0.88 : 1.12;
+				var q1 = (sa + 0.12) / wu; q1 = 1 - q1 * q1;
+				var cu = q1 > 0 ? Math.pow(q1, 0.8) : 0;
+				var q2 = 1 - (sa - 0.08) * (sa - 0.08);
+				var cl = q2 > 0 ? Math.pow(q2, 0.9) : 0;
+				vt = v + 0.055 * s;
+				var vc = 0.03 * cl;
+				vl = vc + (HL * cl - vc) * (0.35 + 0.65 * ou);
+				vu = vl + (-HU * cu - vl) * ou;
+				du_in = vt - vu; dl_in = vl - vt;
+				m_in = clamp01(Math.min(du_in, dl_in) / apx + 0.5);
+			}
+
+			/* iris */
+			var ang = Math.atan2(pv, pu) / TAU; ang -= Math.floor(ang);
+			var ia = (ang * NA | 0) & 4095;
+			var rn = (r - Rp) / (RI - Rp); rn = rn < 0 ? 0 : rn > 1.3 ? 1.3 : rn;
+			var rb = rn * 14, i0 = rb | 0, fr = rb - i0;
+			var fib = 0.55 * A1[ia] + 0.45 * (A2[(ia + i0 * 131) & 4095] * (1 - fr) + A2[(ia + (i0 + 1) * 131) & 4095] * fr);
+			var zig = Math.abs((ang * 34) % 1 - 0.5) * 2 - 0.5;
+			var cr = 0.34 + 0.20 * (A3[ia] - 0.5) + 0.035 * zig;
+			var mm = ss(-0.10, 0.22, rn - cr), fb = 0.45 + 1.05 * fib;
+			var irR = (AMB[0] + (RUST[0] - AMB[0]) * mm) * fb;
+			var irG = (AMB[1] + (RUST[1] - AMB[1]) * mm) * fb;
+			var irB = (AMB[2] + (RUST[2] - AMB[2]) * mm) * fb;
+			var e1 = (rn - cr) / 0.07, glw = Math.exp(-e1 * e1) * (0.2 + fib);
+			irR += 0.22 * glw; irG += 0.11 * glw;
+			var mul = (1 - 0.82 * ss(0.62, 1.0, rn)) * (0.55 + 0.45 * ss(0, 0.07, rn));
+			if (A4[ia] > 0.72) mul *= 1 - 0.55 * ss(0.65, 0.18, rn);
+			if (near) mul *= 0.30 + 0.70 * ss(0, 0.16, du_in);
+			irR *= mul; irG *= mul; irB *= mul;
+
+			var inR, inG, inB;
+			if (near){
+				var cw = ss(0.40, 0.95, Math.abs(s));
+				var sh = (0.38 + 0.62 * ss(0, 0.22, du_in)) * (0.72 + 0.28 * ss(0, 0.10, dl_in)) * (1 - 0.30 * cw);
+				var kc = cw * 0.35;
+				var scR = (0.80 + 0.06 * kc) * sh, scG = (0.82 - 0.32 * kc) * sh, scB = (0.86 - 0.40 * kc) * sh;
+				var vein = (bil(TV2, 512, u * 85 + 40, v * 85 + 70) - 0.925) * 14;
+				if (vein > 0){
+					vein = (vein > 1 ? 1 : vein) * (0.25 + 0.75 * cw) * ss(0.12, 0.32, Math.abs(pu)) * 0.65;
+					scR += (0.62 - scR) * vein; scG += (0.15 - scG) * vein; scB += (0.14 - scB) * vein;
+				}
+				var im = clamp01((RI - r) / apx + 0.5);
+				inR = scR + (irR - scR) * im; inG = scG + (irG - scG) * im; inB = scB + (irB - scB) * im;
+			} else { inR = irR; inG = irG; inB = irB; }
+
+			/* pupil = portal to space */
+			var vig = 0.25 + 0.75 * ss(0, 0.30 * Rps, Rps - RSs[k]);
+			var pm = clamp01((Rp - r) / apx + 0.5);
+			inR += (sr * vig - inR) * pm; inG += (sg * vig - inG) * pm; inB += (sb * vig - inB) * pm;
+
+			/* catchlights */
+			if (fadeC > 0){
+				var ax = pu - 0.075, ay = pv + 0.040, dd1 = Math.sqrt(ax * ax + ay * ay);
+				var win = clamp01(1 - (dd1 - 0.030) / (lpx + 0.004));
+				var bx = pu + 0.045, by = pv - 0.050, dd2 = Math.sqrt(bx * bx + by * by);
+				var win2 = clamp01(1 - (dd2 - 0.009) / (lpx + 0.003)) * 0.5;
+				var wk = (win + win2) * fadeC * 1.4;
+				inR += wk; inG += wk * 0.98; inB += wk * 0.95;
+			}
+
+			var oR = inR, oG = inG, oB = inB;
+
+			/* skin, eyelids, brow */
+			if (skinOn){
+				var mid = 0.5 * (vu + vl), upper = vt < mid;
+				var du = vu - vt; if (du < 0) du = 0;
+				var dl = vt - vl; if (dl < 0) dl = 0;
+				var dd = upper ? du : dl;
+				var tx = bil(TS, 1024, u * 120 + 100, v * 120 + 100), tb = 0.90 + 0.20 * tx;
+				var shs = 0.5 + 0.5 * ss(0, 0.30, dd);
+				var e2 = (v + 0.20) / 0.09; shs *= 1 + 0.10 * Math.exp(-e2 * e2);
+				var crp = 0.075 + 0.03 * (1 - ou);
+				if (upper){ var e3 = (du - crp) / 0.020; shs *= 1 - 0.42 * Math.exp(-e3 * e3); }
+				else { var e4 = (dl - 0.09) / 0.04; shs *= 1 + 0.08 * Math.exp(-e4 * e4); }
+				var skR = 0.62 * tb * shs, skG = 0.40 * tb * shs, skB = 0.29 * tb * shs;
+				if (upper){
+					var lz = ss(crp, crp * 0.4, du) * 0.5;
+					skR += (0.68 * shs - skR) * lz; skG += (0.40 * shs - skG) * lz; skB += (0.31 * shs - skB) * lz;
+				}
+				var sbb = clamp01(1 - Math.abs(s));
+				var e5 = (vt + 0.42 + 0.10 * s * s) / (0.040 + 0.012 * sbb), eb = Math.exp(-e5 * e5);
+				if (eb > 0.002){
+					var ke = eb * (0.55 + 0.9 * bil(TW, 512, u * 90, v * 30)); if (ke > 0.92) ke = 0.92;
+					skR += (0.10 - skR) * ke; skG += (0.06 - skG) * ke; skB += (0.04 - skB) * ke;
+				}
+				if (upper){
+					var e6 = du / 0.010, kl = clamp01(Math.exp(-e6 * e6) * (1 - 0.3 * ou) * 0.9);
+					skR += (0.05 - skR) * kl; skG += (0.03 - skG) * kl; skB += (0.022 - skB) * kl;
+				} else {
+					var wl = ss(0.014, 0, dl) * 0.7;
+					skR += (0.74 - skR) * wl; skG += (0.34 - skG) * wl; skB += (0.30 - skB) * wl;
+					var e7 = (dl - 0.016) / 0.006, gl = Math.exp(-e7 * e7);
+					if (gl > 0.001){
+						gl *= (0.35 + 0.65 * bil(TW, 512, u * 60, v * 60)) * 0.55 * ss(0.12, 0.5, ou);
+						skR += gl; skG += gl * 0.85; skB += gl * 0.75;
+					}
+				}
+				if (dd > 0 && bil(TW, 512, u * 150 + 7, v * 150 + 3) > 0.985){
+					var spk = 0.35 * (0.4 + tx) * ss(0, 0.3, dd);
+					skR += spk; skG += spk * 0.9; skB += spk * 0.8;
+				}
+				oR = skR + (inR - skR) * m_in; oG = skG + (inG - skG) * m_in; oB = skB + (inB - skB) * m_in;
+				var cgx = (u + WO * 0.90) / 0.045, cgy = (vt - 0.025) / 0.032;
+				var cg = Math.exp(-(cgx * cgx + cgy * cgy)) * ss(0.1, 0.5, ou) * 0.85;
+				oR += (0.82 - oR) * cg; oG += (0.42 - oG) * cg; oB += (0.38 - oB) * cg;
+			}
+
+			img[k3] = oR; img[k3 + 1] = oG; img[k3 + 2] = oB; pmS[k] = pm;
+		}
+	}
+
+	bloom();
+
+	/* tone-map, vignette, average into character cells */
+	var fade = ease(t / 1.2), inv = 1 / (SS * SS), c, rr;
+	for (rr = 0; rr < ROWS; rr++){
+		for (c = 0; c < COLS; c++){
+			var aR = 0, aG = 0, aB = 0, aP = 0;
+			for (var sy = 0; sy < SS; sy++){
+				var row = (rr * SS + sy) * GW + c * SS;
+				for (var sx = 0; sx < SS; sx++){
+					var kk = row + sx, q3 = kk * 3;
+					var vg = 1 - 0.30 * ss(0.4, 1.0, RSs[kk]);
+					var R0 = img[q3], G0 = img[q3 + 1], B0 = img[q3 + 2];
+					aR += (1 - Math.exp(-2 * (R0 > 0 ? R0 : 0))) * vg;
+					aG += (1 - Math.exp(-2 * (G0 > 0 ? G0 : 0))) * vg;
+					aB += (1 - Math.exp(-2 * (B0 > 0 ? B0 : 0))) * vg;
+					aP += pmS[kk];
+				}
+			}
+			var ci = rr * COLS + c, fk = fade * inv;
+			aR *= fk; aG *= fk; aB *= fk; aP *= inv;
+			pmc[ci] = aP;
+			var lum = 0.30 * aR + 0.60 * aG + 0.10 * aB;
+			var L = Math.pow(clamp01(lum), 0.72);
+			li[ci] = L;
+			var ri = (L + (HSC[ci] - 0.5) * 0.07) * NR;
+			ri = ri < 0 ? 0 : ri > NR ? NR : ri | 0;
+			if (aP < 0.5 && ri < 3) ri = 3;
+			idx[ci] = ri;
+			fgR[ci] = clamp01(aR * 1.15); fgG[ci] = clamp01(aG * 1.15); fgB[ci] = clamp01(aB * 1.15);
+			vigc[ci] = 0.25 + 0.75 * ss(0, 0.30 * Rps, Rps - RSC[ci]);
+		}
+	}
+
+	stampStars(t, gs, starAmt, offx + parX * 0.05, offy + parY * 0.035);
+	for (var si = 0; si < streaks.length; si++) stampStreak(streaks[si]);
+	if (!full) stampLashes(z, ou);
+}
+
+/* ---------- blit to canvases ---------- */
+function blit(){
+	var d = colorImg.data;
+	for (var k = 0, p = 0; k < N; k++, p += 4){
+		d[p] = fgR[k] * 255; d[p + 1] = fgG[k] * 255; d[p + 2] = fgB[k] * 255; d[p + 3] = 255;
+	}
+	tctx.putImageData(colorImg, 0, 0);
+	gctx.fillStyle = "#000";
+	for (k = 0; k < N; k++){
+		var g = idx[k];
+		if (g === prev[k]) continue;
+		prev[k] = g;
+		var x = (k % COLS) * CWP, y = ((k / COLS) | 0) * CHP;
+		gctx.fillRect(x, y, CWP, CHP);
+		if (g) gctx.drawImage(atlas, g * CWP, 0, CWP, CHP, x, y, CWP, CHP);
+	}
+}
+
+/* =====================================================================
+   PLAYBACK  (intro → site)
+   ===================================================================== */
+
+var body = document.body;
+var phase = "loading";
+var t0 = 0, lastT = 0, lastFrame = 0, ema = 0, frames = 0, rafId = 0, curT = 0;
+var stage = document.getElementById("stage");
+
+function now(){ return performance.now(); }
+
+function renderStatic(t){
+	curT = t;
+	frame(t, 0);
+	blit();
+}
+
+function tick(ts){
+	rafId = requestAnimationFrame(tick);
+	var iv = phase === "site" ? 1000 / 24 : 1000 / 30;
+	if (ts - lastFrame < iv - 2) return;
+	lastFrame = ts;
+
+	var t = (ts - t0) / 1000;
+	var dt = Math.min(Math.max(t - lastT, 0), 0.1);
+	lastT = t; curT = t;
+
+	warp *= 0.9;
+	parX += (tparX - parX) * 0.05; parY += (tparY - parY) * 0.05;
+
+	var a = now();
+	frame(t, dt);
+	blit();
+	var ms = now() - a;
+	ema = frames++ ? ema * 0.9 + ms * 0.1 : ms;
+	if (frames > 15 && SS === 2 && ema > 21){ forceSS = 1; layout(); ema = 0; frames = 0; }
+
+	if (phase === "intro" && ((FULL && t > T_Z0) || t > T_SPACE)) reveal();
+}
+
+function startLoop(){ if (!rafId) rafId = requestAnimationFrame(tick); }
+
+function startIntro(){
+	resetWorld();
+	NFX = NFY = NVX = NVY = 0;
+	if (reduce){ renderStatic(T_SPACE + 3); reveal(); return; }
+	phase = "intro";
+	body.classList.remove("revealed");
+	body.classList.add("intro");
+	t0 = now(); lastT = 0;
+	startLoop();
+}
+
+function skip(){
+	if (phase !== "intro") return;
+	var ts = T_Z0 + T_ZD * 0.93;
+	t0 = now() - ts * 1000; lastT = ts;
+	reveal();
+}
+
+function reveal(){
+	if (phase === "site") return;
+	phase = "site";
+	body.classList.remove("intro");
+	body.classList.add("revealed");
+}
+
+function replay(){
+	if (phase !== "site" || reduce) return;
+	scrollTo({ top: 0, behavior: "instant" });
+	startIntro();
+}
+
+document.getElementById("skip").addEventListener("click", function(e){ e.stopPropagation(); skip(); });
+document.getElementById("replay").addEventListener("click", function(e){ e.stopPropagation(); replay(); });
+addEventListener("click", function(){ if (phase === "intro") skip(); });
+addEventListener("keydown", function(e){
+	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	if (phase === "intro" && (e.key === "Escape" || e.key === "Enter")){ e.preventDefault(); skip(); }
+	else if (phase === "site" && (e.key === "r" || e.key === "R")) replay();
 });
 
+addEventListener("pointermove", function(e){
+	tparX = e.clientX / innerWidth * 2 - 1;
+	tparY = e.clientY / innerHeight * 2 - 1;
+}, { passive: true });
 
-/* =========================
-   SMOOTH VIDEO MOVEMENT
-   ========================= */
-
-var backgroundVideo =
-	document.getElementById("background-video");
-
-if (!reduce){
-
-	/*
-	 * Valeurs de départ.
-	 *
-	 * Le scale est volontairement supérieur à 1
-	 * pour éviter de voir les bords pendant les mouvements.
-	 */
-	var videoScale = 1.08;
-	var videoX = 0;
-	var videoY = 0;
-	var videoRotation = 0;
-
-
-	function randomVideo(min, max){
-
-		return Math.random() * (max - min) + min;
-
-	}
-
-
-	function moveVideo(){
-
-		/*
-		 * Nouvelle destination aléatoire.
-		 *
-		 * Les valeurs restent petites pour que
-		 * le mouvement soit lent et hypnotique.
-		 */
-		videoScale = randomVideo(1.08, 1.22);
-
-		videoX = randomVideo(-1.5, 1.5);
-
-		videoY = randomVideo(-1.5, 1.5);
-
-		videoRotation = randomVideo(-0.8, 0.8);
-
-
-		/*
-		 * Chaque mouvement a une vitesse différente.
-		 *
-		 * Minimum : 8 secondes
-		 * Maximum : 20 secondes
-		 */
-		var duration = randomVideo(
-			8000,
-			20000
-		);
-
-
-		/*
-		 * Courbe très douce.
-		 *
-		 * Aucun mouvement brutal :
-		 * ça accélère doucement,
-		 * puis ralentit doucement.
-		 */
-		backgroundVideo.style.transition =
-			"transform " +
-			duration +
-			"ms cubic-bezier(.45,.05,.55,.95)";
-
-
-		backgroundVideo.style.transform =
-			"translate(" +
-			videoX +
-			"%," +
-			videoY +
-			"%) " +
-			"scale(" +
-			videoScale +
-			") " +
-			"rotate(" +
-			videoRotation +
-			"deg)";
-
-
-		/*
-		 * On attend la fin du mouvement
-		 * avant d'en choisir un nouveau.
-		 *
-		 * Petit délai aléatoire entre deux
-		 * mouvements pour éviter un rythme régulier.
-		 */
-		setTimeout(
-			moveVideo,
-			duration + randomVideo(500, 2500)
-		);
-
-	}
-
-
-	/*
-	 * On laisse la vidéo commencer tranquillement
-	 * avant le premier mouvement.
-	 */
-	setTimeout(
-		moveVideo,
-		2000
-	);
-
+/* the animation fills the first screen; it dims as you scroll down to the content */
+function dimStage(){
+	var k = Math.min(1, Math.max(0, scrollY / innerHeight));
+	stage.style.opacity = (1 - 0.42 * k).toFixed(3);
+	body.classList.toggle("scrolled", scrollY > 30);
 }
 
+var lastScroll = scrollY;
+addEventListener("scroll", function(){
+	var dy = Math.abs(scrollY - lastScroll);
+	lastScroll = scrollY;
+	warp = Math.min(0.12, warp + dy * 0.00025);
+	if (phase === "intro" && scrollY > 20) skip();
+	dimStage();
+}, { passive: true });
+dimStage();
 
-/* =========================
-   BANNER
-   ========================= */
+var rzT = 0;
+addEventListener("resize", function(){
+	clearTimeout(rzT);
+	rzT = setTimeout(function(){
+		if (phase === "loading") return;
+		layout();
+		if (!rafId) renderStatic(curT);
+		sizeSite();
+		dimStage();
+	}, 150);
+});
 
-var L = {
-'A':[
-	"╔═══════╗",
-	"║  ╔═╗  ║",
-	"║  ╚═╝  ║",
-	"║  ╔═╗  ║",
-	"║  ║░║  ║",
-	"╚══╝░╚══╝"
-],
+/* ---------- music: browsers block autoplay, so it starts on the first interaction ---------- */
+var music = document.getElementById("music"), snd = document.getElementById("snd");
+var hasMusic = true, wantMusic = true;
+music.addEventListener("error", function(){ hasMusic = false; snd.hidden = true; }, true);
+music.volume = 0.7;
+function tryMusic(){
+	if (!hasMusic || !wantMusic || !music.paused) return;
+	music.play().then(function(){ snd.hidden = false; snd.textContent = "♪ on"; })
+		.catch(function(){ snd.hidden = false; snd.textContent = "♪ off"; });
+}
+["pointerdown", "keydown", "touchstart"].forEach(function(ev){
+	addEventListener(ev, tryMusic, { passive: true });
+});
+snd.addEventListener("click", function(e){
+	e.stopPropagation();
+	if (music.paused){ wantMusic = true; music.play().catch(function(){}); snd.textContent = "♪ on"; }
+	else { wantMusic = false; music.pause(); snd.textContent = "♪ off"; }
+});
 
-'Y':[
-	"╔══╗░╔══╗",
-	"║  ║░║  ║",
-	"║  ╚═╝  ║",
-	"╚══╗ ╔══╝",
-	"░░░║ ║░░░",
-	"░░░╚═╝░░░"
-],
-
-'K':[
-	"╔══╗░╔══╗",
-	"║  ║╔╝ ╔╝",
-	"║  ╚╝ ╔╝░",
-	"║  ╔╗ ╚╗░",
-	"║  ║╚╗ ╚╗",
-	"╚══╝░╚══╝"
-],
-
-'.':[
-	"░░░░",
-	"░░░░",
-	"░░░░",
-	"░░░░",
-	"╔══╗",
-	"╚══╝"
-],
-
-'D':[
-	"╔══════╗░",
-	"║  ╔═╗ ╚╗",
-	"║  ║░║  ║",
-	"║  ║░║  ║",
-	"║  ╚═╝ ╔╝",
-	"╚══════╝░"
-],
-
-'E':[
-	"╔═══════╗",
-	"║  ╔════╝",
-	"║  ╚══╗░░",
-	"║  ╔══╝░░",
-	"║  ╚════╗",
-	"╚═══════╝"
-],
-
-'V':[
-	"╔══╗░╔══╗",
-	"║  ║░║  ║",
-	"║  ║░║  ║",
-	"╚╗ ╚═╝ ╔╝",
-	"░╚╗   ╔╝░",
-	"░░╚═══╝░░"
-]
-};
-
-var rows = [];
-
-for (var i = 0; i < 6; i++){
-
-	rows.push(
-		"░" +
-		"AYKA.DEV".split("").map(function(c){
-			return L[c][i];
-		}).join("░") +
-		"░"
-	);
-
+function boot(){
+	measureFont();
+	buildTextures();
+	layout();
+	sizeSite();
+	startIntro();
+	tryMusic();
+	boxes.forEach(function(b){ boxIO.observe(b); });
 }
 
-var W = rows[0].length;
+var fontsReady = document.fonts && document.fonts.load
+	? Promise.race([
+		document.fonts.load('700 16px "JetBrains Mono"'),
+		new Promise(function(r){ setTimeout(r, 800); })
+	])
+	: Promise.resolve();
+fontsReady.then(function(){}, function(){}).then(function(){
+	requestAnimationFrame(function(){ setTimeout(boot, 0); });
+});
 
-rows.unshift("░".repeat(W));
-rows.push("░".repeat(W));
+/* =====================================================================
+   SITE (ascii boxes, status bar)
+   ===================================================================== */
 
-var pre = document.getElementById("banner");
+var siteEl = document.getElementById("site");
+var meter = document.getElementById("meter");
+var cwPx = 9;
+meter.textContent = "─".repeat(100);
 
-var shades = [
-	" ",
-	"░",
-	"░",
-	"▒",
-	"▓",
-	"█",
-	"▓",
-	"▒",
-	"░",
-	"░"
-];
+function esc(s){ return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-function draw(t){
+var boxes = [].slice.call(document.querySelectorAll(".box"));
+boxes.forEach(function(b){ b._p = 0; });
 
-	pre.textContent = rows.map(function(r, y){
+function paintBox(b){
+	var n = b._n, p = b._p, title = b.dataset.title, foot = b.dataset.foot || "";
+	var head = "┌─[ ", tail = " ]";
+	var fill = Math.max(0, n - head.length - title.length - tail.length - 1);
+	var full = head + title + tail + "─".repeat(fill) + "┐";
+	var k = Math.round(full.length * p);
+	var h1 = Math.min(k, head.length);
+	var h2 = Math.max(0, Math.min(k - head.length, title.length));
+	var h3 = Math.max(0, k - head.length - title.length);
+	b.querySelector(".box-top").innerHTML =
+		esc(head.slice(0, h1)) + "<b>" + esc(title.slice(0, h2)) + "</b>" +
+		esc(full.slice(head.length + title.length, head.length + title.length + h3));
 
-		return r.replace(
-			/░/g,
-			function(_, x){
+	var ft = foot ? "[ " + foot + " ]─" : "";
+	var bottom = "└" + "─".repeat(Math.max(0, n - 2 - ft.length)) + ft + "┘";
+	var kb = Math.round(bottom.length * p);
+	var vis = bottom.slice(0, kb);
+	var cut = bottom.length - ft.length - 1;
+	b.querySelector(".box-bot").innerHTML = ft && kb > cut
+		? esc(vis.slice(0, cut)) + "<i>" + esc(vis.slice(cut)) + "</i>"
+		: esc(vis);
+}
 
-				var v =
-					Math.sin(
-						x * 0.18 +
-						y * 0.6 -
-						t * 0.002
-					) * 0.5 + 0.5;
+function drawBox(b){
+	if (b._drawing || b._p >= 1) return;
+	b._drawing = true;
+	if (reduce){ b._p = 1; paintBox(b); b.classList.add("in"); return; }
+	var st = now();
+	b.classList.add("in");
+	(function step(){
+		b._p = Math.min(1, (now() - st) / 650);
+		paintBox(b);
+		if (b._p < 1) requestAnimationFrame(step);
+	})();
+}
 
-				return shades[
-					Math.floor(
-						v * (shades.length - 1)
-					)
-				];
+function sizeSite(){
+	cwPx = meter.getBoundingClientRect().width / 100 || 9;
+	document.documentElement.style.setProperty("--cw", cwPx + "px");
+	var n = Math.max(26, Math.floor(siteEl.clientWidth / cwPx));
+	boxes.forEach(function(b){ b._n = n; b.style.setProperty("--n", n); paintBox(b); });
+	var fl = document.getElementById("footline");
+	var label = " eof ";
+	var side = Math.max(0, Math.floor((n - label.length) / 2));
+	fl.textContent = "─".repeat(side) + label + "─".repeat(Math.max(0, n - side - label.length));
+}
 
+/* ---------- scramble project names on hover ---------- */
+var GLY = "!<>-_\\/[]{}=+*^?#░▒▓";
+[].forEach.call(document.querySelectorAll(".pname"), function(el){
+	var final = el.textContent;
+	el.closest(".node").addEventListener("mouseenter", function(){
+		if (reduce) return;
+		var f = 0;
+		clearInterval(el._t);
+		el._t = setInterval(function(){
+			el.textContent = final.split("").map(function(c, i){
+				return i < f / 2 || c === " " ? c : GLY[(Math.random() * GLY.length) | 0];
+			}).join("");
+			if (++f / 2 >= final.length){ clearInterval(el._t); el.textContent = final; }
+		}, 26);
+	});
+});
+
+/* ---------- status bar: active section ---------- */
+var tabs = [].slice.call(document.querySelectorAll("#bar a.tab"));
+var secIO = new IntersectionObserver(function(es){
+	es.forEach(function(e){
+		if (!e.isIntersecting) return;
+		tabs.forEach(function(a){ a.classList.toggle("on", a.dataset.s === e.target.id); });
+	});
+}, { rootMargin: "-45% 0px -50% 0px" });
+["top", "whoami", "projects", "contact"].forEach(function(id){ secIO.observe(document.getElementById(id)); });
+
+/* ---------- clock: my time (Europe/Paris) + difference with the visitor ---------- */
+var clock = document.getElementById("clock");
+var HOME_TZ = "Europe/Paris";
+function tzOffsetMin(tz, d){
+	var p = {};
+	new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+		hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(d).forEach(function(x){ p[x.type] = x.value; });
+	var asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second);
+	return Math.round((asUTC - Math.floor(d.getTime() / 1000) * 1000) / 60000);
+}
+function fmtDiff(min){
+	var sign = min > 0 ? "+" : "−", a = Math.abs(min), h = Math.floor(a / 60), m = a % 60;
+	return sign + h + "h" + (m ? ("0" + m).slice(-2) : "");
+}
+function tickClock(){
+	var d = new Date();
+	var hm = new Intl.DateTimeFormat("en-GB", { timeZone: HOME_TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d);
+	var hour = parseInt(hm, 10);
+	var diff = tzOffsetMin(HOME_TZ, d) + d.getTimezoneOffset();   /* paris minus visitor, in minutes */
+	var rel = diff === 0 ? "same as you" : fmtDiff(diff) + " vs you";
+	var night = hour >= 1 && hour < 8;
+	clock.innerHTML = "paris " + hm + (night ? " zz" : "") + ' <span class="diff">(' + rel + ")</span>";
+	clock.title = "my local time (Europe/Paris)" + (diff === 0 ? ", same as yours" :
+		", " + fmtDiff(diff).replace("−", "-") + " compared to yours") + (night ? " · probably asleep" : "");
+}
+tickClock(); setInterval(tickClock, 15000);
+
+/* ---------- copy email ---------- */
+var mailBtn = document.getElementById("mail");
+mailBtn.addEventListener("click", function(e){
+	e.stopPropagation();
+	var done = function(ok){
+		mailBtn.textContent = ok ? "✓ copied" : "contact@ayka.dev";
+		setTimeout(function(){ mailBtn.textContent = "✉ copy mail"; }, 1800);
+	};
+	if (navigator.clipboard) navigator.clipboard.writeText("contact@ayka.dev").then(function(){ done(true); }, function(){ done(false); });
+	else done(false);
+});
+
+/* ---------- discord presence (Lanyard: github.com/Phineas/lanyard) ---------- */
+var DISCORD_ID = "1198196468272603196";
+var dcDot = document.getElementById("dc-dot"), dcTxt = document.getElementById("dc-txt");
+var whoRow = document.getElementById("who-status"), whoDot = document.getElementById("who-dot"), whoTxt = document.getElementById("who-txt");
+var presence = null;
+var STATUS_TXT = { online: "online", idle: "idle", dnd: "do not disturb", offline: "offline" };
+
+function mmss(ms){ ms = Math.max(0, ms / 1000 | 0); return (ms / 60 | 0) + ":" + ("0" + ms % 60).slice(-2); }
+
+function renderPresence(){
+	var p = presence;
+	if (!p) return;
+	var st = p.discord_status || "offline", html = esc(STATUS_TXT[st] || st), barHtml = "";
+	var acts = p.activities || [];
+	var game = acts.filter(function(a){ return a.type === 0; })[0];
+	var custom = acts.filter(function(a){ return a.type === 4 && a.state; })[0];
+	if (p.listening_to_spotify && p.spotify){
+		var sp = p.spotify, ts = sp.timestamps || {};
+		var prog = ts.start && ts.end ? " " + mmss(Math.min(Date.now(), ts.end) - ts.start) + "/" + mmss(ts.end - ts.start) : "";
+		html = '<span class="spot">♫</span> ' + esc(sp.song) + ' <span class="sub">— ' + esc(sp.artist) + esc(prog) + "</span>";
+		barHtml = html;
+	} else if (game){
+		html = '<span class="sub">playing</span> ' + esc(game.name) + (game.details ? ' <span class="sub">· ' + esc(game.details) + "</span>" : "");
+		barHtml = html;
+	} else if (custom){
+		html = esc((custom.emoji && !custom.emoji.id ? custom.emoji.name + " " : "") + custom.state);
+	}
+	dcDot.className = whoDot.className = "dot " + st;
+	var du = p.discord_user || {}, dcImg = document.getElementById("dc-img"), dcName = document.getElementById("dc-name");
+	if (du.avatar){ dcImg.src = "https://cdn.discordapp.com/avatars/" + du.id + "/" + du.avatar + ".png?size=64"; dcImg.hidden = false; }
+	dcName.textContent = du.global_name || du.username || "ayka";
+	var ns = nameStyleOf(du);
+	if (ns){ dcName.classList.remove("rgb"); dcName.setAttribute("style", ns); }
+	dcTxt.innerHTML = barHtml;   /* bar: profile only, plus music / game when there is one */
+	document.getElementById("dc").title = "discord · " + (STATUS_TXT[st] || st);
+	whoTxt.innerHTML = html;
+	whoRow.hidden = false;
+	renderCard();
+}
+setInterval(function(){ if (presence && presence.listening_to_spotify) renderPresence(); }, 1000);
+
+(function lanyard(){
+	var ws, hb = 0, retry = 2000;
+	function open(){
+		if (!("WebSocket" in window)) return;
+		try { ws = new WebSocket("wss://api.lanyard.rest/socket"); } catch (e){ return; }
+		ws.onmessage = function(ev){
+			var m; try { m = JSON.parse(ev.data); } catch (e){ return; }
+			if (m.op === 1){
+				clearInterval(hb);
+				hb = setInterval(function(){ if (ws.readyState === 1) ws.send('{"op":3}'); }, m.d.heartbeat_interval);
+				ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } }));
+			} else if (m.op === 0 && m.d && m.d.discord_status && (m.t === "INIT_STATE" || m.t === "PRESENCE_UPDATE")){
+				presence = m.d; retry = 2000; renderPresence();
 			}
-		);
-
-	}).join("\n");
-
-}
-
-function fit(){
-
-	pre.style.fontSize = "12px";
-	pre.style.lineHeight = "11px";
-
-	var k = Math.min(
-		1,
-		document.body.clientWidth /
-		pre.scrollWidth
-	);
-
-	if (k < 1){
-
-		pre.style.fontSize =
-			12 * k + "px";
-
-		pre.style.lineHeight =
-			11 * k + "px";
-
+		};
+		ws.onclose = function(){
+			clearInterval(hb);
+			setTimeout(open, retry);
+			retry = Math.min(retry * 2, 60000);
+		};
 	}
-
-}
-
-draw(0);
-fit();
-
-addEventListener("resize", fit);
-
-if (!reduce){
-
-	var last = 0;
-
-	(function loop(t){
-
-		if (t - last > 70){
-
-			draw(t);
-			last = t;
-
-		}
-
-		requestAnimationFrame(loop);
-
-	})(0);
-
-}
-
-
-/* =========================
-   TYPED TAGLINE
-   ========================= */
-
-var tags = [
-	"i build tools.",
-	"creator of steamtools.app.",
-	"switch → ps4 streaming, why not.",
-	"independent developer."
-];
-
-var tag = document.getElementById("tag");
-
-var ti = 0;
-var n = 0;
-var del = false;
-
-(function typeTag(){
-
-	var s = tags[ti];
-
-	tag.textContent = s.slice(0, n);
-
-	if (reduce){
-
-		tag.textContent = s;
-		return;
-
-	}
-
-	if (!del && n < s.length){
-
-		n++;
-
-		setTimeout(typeTag, 60);
-
-	}
-	else if (!del){
-
-		del = true;
-
-		setTimeout(typeTag, 2500);
-
-	}
-	else if (n > 0){
-
-		n--;
-
-		setTimeout(typeTag, 25);
-
-	}
-	else{
-
-		del = false;
-
-		ti = (ti + 1) % tags.length;
-
-		setTimeout(typeTag, 400);
-
-	}
-
+	/* REST first: while the account isn't monitored by Lanyard, keep the plain "discord" link */
+	fetch("https://api.lanyard.rest/v1/users/" + DISCORD_ID).then(function(r){ return r.json(); }).then(function(j){
+		if (!j || !j.success) return;
+		presence = j.data; renderPresence();
+		open();
+	}).catch(function(){});
 })();
 
 
-/* =========================
-   REVEAL ON SCROLL
-   ========================= */
+/* ---------- discord profile card (opens from the status bar) ---------- */
+var dpop = document.getElementById("dpop"), dcLink = document.getElementById("dc");
+var PROFILE_URL = "https://discord.com/users/" + DISCORD_ID;
+var ACT_LBL = { 0: "playing", 1: "streaming", 2: "listening to", 3: "watching", 5: "competing in" };
 
-var io = new IntersectionObserver(
-	function(es){
-
-		es.forEach(function(e){
-
-			if (e.isIntersecting){
-
-				e.target.classList.add("in");
-
-				io.unobserve(e.target);
-
+/* turn any (CORS-enabled) image into coloured ASCII, cached by url */
+var asciiCache = {};
+var ASC = " .'`^,:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
+function asciify(url, cols, rows, round){
+	if (url in asciiCache) return asciiCache[url];
+	asciiCache[url] = undefined;
+	var im = new Image();
+	im.crossOrigin = "anonymous";
+	im.onload = function(){
+		try {
+			var SSA = 4, W2 = cols * SSA, H2 = rows * SSA;
+			var cv = document.createElement("canvas"); cv.width = W2; cv.height = H2;
+			var cx = cv.getContext("2d");
+			cx.imageSmoothingQuality = "high";
+			/* centre-crop to the cell grid's real aspect (square for avatars) */
+			var cellAR = 0.6 / 1.09, gridAR = cols * cellAR / rows, iw = im.naturalWidth, ih = im.naturalHeight;
+			var sw = iw, sh = ih;
+			if (iw / ih > gridAR) sw = ih * gridAR; else sh = iw / gridAR;
+			cx.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, 0, 0, W2, H2);
+			var d = cx.getImageData(0, 0, W2, H2).data;
+			var R = new Float32Array(cols * rows), G = new Float32Array(cols * rows), B = new Float32Array(cols * rows), M = new Uint8Array(cols * rows);
+			var lo = 1, hi = 0, x, y, k;
+			for (y = 0; y < rows; y++) for (x = 0; x < cols; x++){
+				k = y * cols + x;
+				if (round){
+					var dx = (x + 0.5) / cols * 2 - 1, dy = (y + 0.5) / rows * 2 - 1;
+					if (dx * dx + dy * dy > 1) continue;
+				}
+				var r = 0, g = 0, bb = 0;
+				for (var sy = 0; sy < SSA; sy++) for (var sx = 0; sx < SSA; sx++){
+					var i = ((y * SSA + sy) * W2 + x * SSA + sx) * 4, al = d[i + 3] / 255;
+					r += d[i] * al; g += d[i + 1] * al; bb += d[i + 2] * al;
+				}
+				var n = SSA * SSA;
+				R[k] = r / n; G[k] = g / n; B[k] = bb / n; M[k] = 1;
+				var L = (0.3 * R[k] + 0.59 * G[k] + 0.11 * B[k]) / 255;
+				if (L < lo) lo = L;
+				if (L > hi) hi = L;
 			}
-
-		});
-
-	},
-	{
-		threshold: .2
-	}
-);
-
-document.querySelectorAll(".fade").forEach(
-	function(el, i){
-
-		el.style.transitionDelay =
-			(i * 0.12) + "s";
-
-		io.observe(el);
-
-	}
-);
-
-
-/* =========================
-   YEAR
-   ========================= */
-
-var year = document.getElementById("year");
-
-if (year){
-
-	year.textContent =
-		new Date().getFullYear();
-
+			var span = Math.max(0.08, hi - lo), out = "", NRA = ASC.length - 1;
+			for (y = 0; y < rows; y++){
+				for (x = 0; x < cols; x++){
+					k = y * cols + x;
+					if (!M[k]){ out += " "; continue; }
+					var Ln = ((0.3 * R[k] + 0.59 * G[k] + 0.11 * B[k]) / 255 - lo) / span;
+					var ch = ASC[Math.max(1, Math.min(NRA, Math.round(Math.pow(Ln, 0.85) * NRA)))];
+					if (ch === "<" || ch === ">" || ch === "&") ch = "+";
+					var f = Math.min(1.9, 235 / Math.max(R[k], G[k], B[k], 1));
+					out += '<span style="color:rgb(' + (R[k] * f | 0) + "," + (G[k] * f | 0) + "," + (B[k] * f | 0) +
+						");background:rgba(" + (R[k] | 0) + "," + (G[k] | 0) + "," + (B[k] | 0) + ',.55)">' + ch + "</span>";
+				}
+				out += "\n";
+			}
+			asciiCache[url] = out;
+		} catch (e){ asciiCache[url] = null; }
+		renderCard();
+	};
+	im.onerror = function(){ asciiCache[url] = null; renderCard(); };
+	im.src = url;
+	return undefined;
 }
 
+/* ascii if ready, a blank placeholder while loading, the plain image if the conversion failed */
+function asciiOrImg(url, cols, rows, round, cls){
+	var a = asciify(url, cols, rows, round);
+	if (a) return '<pre class="dp-asc ' + cls + '" aria-hidden="true">' + a + "</pre>";
+	if (a === null) return '<img class="dp-img ' + cls + '" src="' + esc(url) + '" alt="">';
+	return '<pre class="dp-asc ' + cls + '" aria-hidden="true">' + (" ".repeat(cols) + "\n").repeat(rows) + "</pre>";
+}
+
+function actImage(a){
+	var l = a.assets && a.assets.large_image;
+	if (!l) return null;
+	if (l.indexOf("mp:external/") === 0) return "https://media.discordapp.net/external/" + l.slice(12);
+	if (l.indexOf("spotify:") === 0) return "https://i.scdn.co/image/" + l.slice(8);
+	if (a.application_id) return "https://cdn.discordapp.com/app-assets/" + a.application_id + "/" + l + ".png";
+	return null;
+}
+
+function dur(ms){
+	var m = Math.max(0, ms / 60000 | 0), h = m / 60 | 0;
+	return h ? h + "h " + ("0" + m % 60).slice(-2) + "m" : m + "m";
+}
+
+function progBar(s, e){
+	var now = Math.min(Date.now(), e), f = Math.max(0, Math.min(1, (now - s) / (e - s))), w = 18, k = Math.round(f * w);
+	return "━".repeat(k) + "●" + "─".repeat(w - k) + " " + mmss(now - s) + " / " + mmss(e - s);
+}
+
+function hex(n){ return "#" + ("00000" + n.toString(16)).slice(-6); }
+function nameStyleOf(u){
+	var cols = (u && u.display_name_styles && u.display_name_styles.colors) || [];
+	return cols.length > 1
+		? "background:linear-gradient(90deg," + cols.map(hex).join(",") + ");-webkit-background-clip:text;background-clip:text;color:transparent"
+		: cols.length ? "color:" + hex(cols[0]) : "";
+}
+
+function renderCard(){
+	if (!dpop.classList.contains("open")) return;
+	var html = '<div class="dp-head"><span>┌─[ <b class="rgb">discord</b> ]</span><span class="dp-line"></span>' +
+		'<button class="dp-x" type="button" aria-label="Close">[x]</button></div><div class="dp-body">';
+	var p = presence;
+	if (!p){
+		html += '<p class="sub">live presence is not available right now.</p>';
+	} else {
+		var u = p.discord_user || {}, st = p.discord_status || "offline";
+		var av = u.avatar ? "https://cdn.discordapp.com/avatars/" + u.id + "/" + u.avatar + ".png?size=128" : "https://cdn.discordapp.com/embed/avatars/0.png";
+		var avReal = u.avatar && u.avatar.indexOf("a_") === 0 ? av.replace(".png", ".gif") : av;
+		var deco = u.avatar_decoration_data && u.avatar_decoration_data.asset
+			? "https://cdn.discordapp.com/avatar-decoration-presets/" + u.avatar_decoration_data.asset + ".png?size=160&passthrough=true" : "";
+		var cols = (u.display_name_styles && u.display_name_styles.colors) || [];
+		var nameStyle = nameStyleOf(u);
+		var g = u.primary_guild;
+		var tag = g && g.tag && g.identity_enabled
+			? '<span class="dp-tag" title="server tag">' + (g.badge ? '<img src="https://cdn.discordapp.com/guild-tag-badges/' + g.identity_guild_id + "/" + g.badge + '.png?size=16" alt="">' : "") + esc(g.tag) + "</span>" : "";
+		var plats = [];
+		if (p.active_on_discord_desktop) plats.push("desktop");
+		if (p.active_on_discord_mobile) plats.push("mobile");
+		if (p.active_on_discord_web) plats.push("web");
+		var acts = p.activities || [];
+		var custom = acts.filter(function(a){ return a.type === 4; })[0];
+		var customHtml = "";
+		if (custom && (custom.state || custom.emoji)){
+			var em = custom.emoji;
+			customHtml = '<div class="dp-custom">' +
+				(em ? (em.id ? '<img class="dp-emoji" src="https://cdn.discordapp.com/emojis/' + em.id + (em.animated ? ".gif" : ".webp") + '?size=32" alt="' + esc(em.name || "") + '"> ' : esc(em.name) + " ") : "") +
+				esc(custom.state || "") + "</div>";
+		}
+
+		html += '<div class="dp-top">' +
+			'<a class="dp-av" href="' + PROFILE_URL + '" target="_blank" rel="noopener" title="hover: real avatar">' +
+				asciiOrImg(av.replace("size=128", "size=256"), 40, 22, true, "av") +
+				'<img class="dp-real" src="' + esc(avReal) + '" alt="avatar">' +
+				(deco ? '<img class="dp-deco" src="' + esc(deco) + '" alt="">' : "") +
+			"</a>" +
+			'<div class="dp-id">' +
+				'<div class="dp-name" style="' + nameStyle + '">' + esc(u.global_name || u.display_name || u.username || "ayka") + "</div>" + tag +
+				'<div class="sub">@' + esc(u.username || "") + "</div>" +
+				'<div class="dp-st"><span class="dot ' + st + '"></span> ' + esc(STATUS_TXT[st] || st) +
+					(plats.length ? ' <span class="sub">· on ' + plats.join(", ") + "</span>" : "") + "</div>" +
+				customHtml +
+			"</div></div>";
+
+		var blocks = "";
+		if (p.listening_to_spotify && p.spotify){
+			var sp = p.spotify, ts = sp.timestamps || {};
+			blocks += '<div class="dp-act">' +
+				(sp.album_art_url ? asciiOrImg(sp.album_art_url, 22, 12, false, "art") : "") +
+				'<div class="dp-info"><div class="lbl">listening on <span class="spot">spotify</span></div>' +
+				'<a href="https://open.spotify.com/track/' + esc(sp.track_id || "") + '" target="_blank" rel="noopener"><b>' + esc(sp.song) + "</b></a>" +
+				"<div>by " + esc(sp.artist) + "</div>" +
+				(sp.album ? '<div class="sub">on ' + esc(sp.album) + "</div>" : "") +
+				(ts.start && ts.end ? '<div class="dp-prog js-prog" data-s="' + ts.start + '" data-e="' + ts.end + '">' + progBar(ts.start, ts.end) + "</div>" : "") +
+				"</div></div>";
+		}
+		acts.forEach(function(a){
+			if (a.type === 4) return;
+			if (a.type === 2 && a.name === "Spotify" && p.spotify) return;
+			var img = actImage(a), t = a.timestamps || {};
+			var time = t.end ? '<div class="sub js-left" data-e="' + t.end + '">' + mmss(t.end - Date.now()) + " left</div>"
+				: t.start ? '<div class="sub js-el" data-s="' + t.start + '">for ' + dur(Date.now() - t.start) + "</div>" : "";
+			blocks += '<div class="dp-act">' +
+				(img ? asciiOrImg(img, 22, 12, false, "art") : '<pre class="dp-asc art dp-ph" aria-hidden="true">┌────┐\n│ ▶  │\n└────┘</pre>') +
+				'<div class="dp-info"><div class="lbl">' + (ACT_LBL[a.type] || "") + "</div>" +
+				"<b>" + esc(a.name || "") + "</b>" +
+				(a.details ? "<div>" + esc(a.details) + "</div>" : "") +
+				(a.state ? '<div class="sub">' + esc(a.state) + "</div>" : "") +
+				time + "</div></div>";
+		});
+		if (!blocks) blocks = '<p class="sub dp-none">' + (st === "offline" ? "offline right now, leave a message." : "not doing anything in particular right now.") + "</p>";
+		html += '<div class="dp-sep"></div>' + blocks;
+	}
+	html += '<div class="dp-sep"></div><div class="dp-actions">' +
+		'<a href="' + PROFILE_URL + '" target="_blank" rel="noopener">[ open profile ↗ ]</a>' +
+		(p && p.discord_user ? '<button type="button" class="dp-copy">[ copy @' + esc(p.discord_user.username) + " ]</button>" : "") +
+		"</div></div>";
+	dpop.innerHTML = html;
+}
+
+function tickCard(){
+	if (!dpop.classList.contains("open")) return;
+	[].forEach.call(dpop.querySelectorAll(".js-prog"), function(el){ el.textContent = progBar(+el.dataset.s, +el.dataset.e); });
+	[].forEach.call(dpop.querySelectorAll(".js-el"), function(el){ el.textContent = "for " + dur(Date.now() - el.dataset.s); });
+	[].forEach.call(dpop.querySelectorAll(".js-left"), function(el){ el.textContent = mmss(el.dataset.e - Date.now()) + " left"; });
+}
+setInterval(tickCard, 1000);
+
+function placeCard(){
+	var r = dcLink.getBoundingClientRect(), w = dpop.offsetWidth;
+	dpop.style.left = Math.max(8, Math.min(r.left - 8, innerWidth - w - 8)) + "px";
+}
+function openCard(){
+	dpop.hidden = false;
+	dpop.classList.add("open");
+	dcLink.setAttribute("aria-expanded", "true");
+	renderCard();
+	placeCard();
+}
+function closeCard(){
+	dpop.classList.remove("open");
+	dcLink.setAttribute("aria-expanded", "false");
+}
+dcLink.addEventListener("click", function(e){
+	e.preventDefault();
+	e.stopPropagation();
+	dpop.classList.contains("open") ? closeCard() : openCard();
+});
+dpop.addEventListener("click", function(e){
+	e.stopPropagation();
+	if (e.target.closest(".dp-x")) closeCard();
+	var cp = e.target.closest(".dp-copy");
+	if (cp && presence && navigator.clipboard){
+		navigator.clipboard.writeText(presence.discord_user.username).then(function(){
+			cp.textContent = "[ ✓ copied ]";
+			setTimeout(function(){ renderCard(); }, 1500);
+		}, function(){});
+	}
+});
+document.addEventListener("click", function(e){
+	if (dpop.classList.contains("open") && !e.target.closest("#dpop")) closeCard();
+});
+addEventListener("keydown", function(e){ if (e.key === "Escape") closeCard(); });
+addEventListener("resize", function(){ if (dpop.classList.contains("open")) placeCard(); });
+
+/* ---------- favicon: cycles >_ → eye → @ (8x8 pixel glyphs) ---------- */
+(function(){
+	var fav = document.getElementById("fav");
+	if (!fav || reduce) return;
+	var icons = ["prompt", "eye", "at"], i = 0;
+	icons.forEach(function(n){ new Image().src = "/favicons/" + n + ".svg"; });   /* preload */
+	setInterval(function(){
+		i = (i + 1) % icons.length;
+		fav.href = "/favicons/" + icons[i] + ".svg";
+	}, 2500);
+})();
+
+/* ---------- github: latest public push ---------- */
+function ago(iso){
+	var s = (Date.now() - new Date(iso).getTime()) / 1000;
+	if (s < 3600) return Math.max(1, s / 60 | 0) + "m ago";
+	if (s < 86400) return (s / 3600 | 0) + "h ago";
+	return (s / 86400 | 0) + "d ago";
+}
+function showGh(ev){
+	var gh = document.getElementById("gh"), repo = ev.repo.split("/").pop();
+	gh.href = "https://github.com/" + ev.repo;
+	gh.innerHTML = '⎇ last push <span class="repo">' + esc(repo) + "</span> · " + ago(ev.at);
+	gh.title = "latest public push on GitHub: " + ev.repo;
+	gh.hidden = false;
+	document.getElementById("gh-sep").hidden = false;
+}
+(function github(){
+	var KEY = "ayka-gh-push", cached = null;
+	try { cached = JSON.parse(sessionStorage.getItem(KEY)); } catch (e){}
+	if (cached && Date.now() - cached.t < 15 * 60000){ if (cached.ev) showGh(cached.ev); return; }
+	fetch("https://api.github.com/users/ayka-667/events/public?per_page=30").then(function(r){ return r.ok ? r.json() : []; }).then(function(list){
+		var push = (list || []).filter(function(e){ return e.type === "PushEvent"; })[0];
+		var ev = push ? { repo: push.repo.name, at: push.created_at } : null;
+		try { sessionStorage.setItem(KEY, JSON.stringify({ t: Date.now(), ev: ev })); } catch (e){}
+		if (ev) showGh(ev);
+	}).catch(function(){});
+})();
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+/* ---------- section-by-section smooth scrolling ----------
+   one small scroll (wheel, keys or swipe) glides straight to the next section.
+   a section taller than the screen scrolls normally until its edge is reached. */
+var SECS = ["top", "whoami", "projects", "contact"].map(function(id){ return document.getElementById(id); });
+var BAR_H = 26;
+var anim = 0, animating = false, wheelLock = false, wheelT = 0;
+
+function maxScroll(){ return document.documentElement.scrollHeight - innerHeight; }
+
+function targetOf(el){
+	if (el.id === "top") return 0;
+	var r = el.getBoundingClientRect(), top = r.top + scrollY, avail = innerHeight - BAR_H;
+	var y = r.height > avail - 48 ? top - 24 : top + r.height / 2 - avail / 2;
+	return Math.max(0, Math.min(maxScroll(), Math.round(y)));
+}
+
+function targets(){
+	var T = SECS.map(targetOf), end = maxScroll();
+	if (end > T[T.length - 1] + 8) T.push(end);
+	return T;
+}
+
+function goTo(y){
+	cancelAnimationFrame(anim);
+	y = Math.max(0, Math.min(maxScroll(), y));
+	var from = scrollY, dist = y - from;
+	if (Math.abs(dist) < 2){ animating = false; return; }
+	if (reduce){ scrollTo({ top: y, behavior: "instant" }); return; }
+	var dur = Math.min(1100, 650 + Math.abs(dist) * 0.25), st = now();
+	animating = true;
+	(function stepAnim(){
+		var k = Math.min(1, (now() - st) / dur);
+		var e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+		scrollTo({ top: from + dist * e, behavior: "instant" });
+		if (k < 1) anim = requestAnimationFrame(stepAnim);
+		else animating = false;
+	})();
+}
+
+function stepSection(dir){
+	var T = targets(), y = scrollY, i;
+	if (dir > 0){ for (i = 0; i < T.length; i++) if (T[i] > y + 4) return goTo(T[i]); }
+	else { for (i = T.length - 1; i >= 0; i--) if (T[i] < y - 4) return goTo(T[i]); }
+}
+
+/* true when the visible section is taller than the screen and still has content in that direction */
+function nativeInside(dir){
+	for (var i = 1; i < SECS.length; i++){
+		var r = SECS[i].getBoundingClientRect();
+		if (r.height <= innerHeight - BAR_H - 48) continue;
+		if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5){
+			if (dir > 0 && r.bottom > innerHeight - BAR_H + 4) return true;
+			if (dir < 0 && r.top < -4) return true;
+		}
+	}
+	return false;
+}
+
+function navigate(dir){
+	if (phase === "intro"){ skip(); if (dir < 0) return; }
+	stepSection(dir);
+}
+
+addEventListener("wheel", function(e){
+	if (e.ctrlKey || Math.abs(e.deltaY) < 2) return;
+	if (e.target.closest && e.target.closest("#dpop")) return;
+	var dir = e.deltaY > 0 ? 1 : -1;
+	if (!animating && !wheelLock && nativeInside(dir)) return;
+	e.preventDefault();
+	clearTimeout(wheelT);
+	wheelT = setTimeout(function(){ wheelLock = false; }, 220);
+	if (animating || wheelLock) return;
+	wheelLock = true;
+	navigate(dir);
+}, { passive: false });
+
+var ty0 = 0, tyLast = 0, touchNative = false;
+addEventListener("touchstart", function(e){
+	ty0 = tyLast = e.touches[0].clientY;
+	touchNative = false;
+	if (animating){ cancelAnimationFrame(anim); animating = false; }
+}, { passive: true });
+addEventListener("touchmove", function(e){
+	var y = e.touches[0].clientY, dir = ty0 - y > 0 ? 1 : -1;
+	tyLast = y;
+	if (e.target.closest && e.target.closest("#dpop")){ touchNative = true; return; }
+	if (Math.abs(ty0 - y) > 4 && !touchNative) touchNative = phase === "site" && nativeInside(dir);
+	if (!touchNative && e.cancelable) e.preventDefault();
+}, { passive: false });
+addEventListener("touchend", function(){
+	var dy = ty0 - tyLast;
+	if (!touchNative && Math.abs(dy) > 30) navigate(dy > 0 ? 1 : -1);
+}, { passive: true });
+
+addEventListener("keydown", function(e){
+	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	var k = e.key, dir = 0;
+	if (k === "ArrowDown" || k === "PageDown" || (k === " " && !e.shiftKey)) dir = 1;
+	else if (k === "ArrowUp" || k === "PageUp" || (k === " " && e.shiftKey)) dir = -1;
+	else if (k === "Home"){ e.preventDefault(); goTo(0); return; }
+	else if (k === "End"){ e.preventDefault(); if (phase === "intro") skip(); goTo(maxScroll()); return; }
+	if (!dir) return;
+	if (phase === "site" && nativeInside(dir)) return;
+	e.preventDefault();
+	if (!animating) navigate(dir);
+});
+
+/* status-bar links and [ scroll ↓ ] use the same glide */
+[].forEach.call(document.querySelectorAll('a[href^="#"]'), function(a){
+	a.addEventListener("click", function(e){
+		var el = document.getElementById(a.getAttribute("href").slice(1));
+		if (!el) return;
+		e.preventDefault();
+		if (phase === "intro") skip();
+		goTo(targetOf(el));
+	});
+});
+
+/* ---------- boxes draw themselves when scrolled into view ---------- */
+var boxIO = new IntersectionObserver(function(es){
+	es.forEach(function(e){ if (e.isIntersecting){ drawBox(e.target); boxIO.unobserve(e.target); } });
+}, { threshold: 0.15 });
+
+})();
 </script>
 
 </body>
