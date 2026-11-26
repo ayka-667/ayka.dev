@@ -2560,16 +2560,28 @@ function showGh(ev){
 	gh.hidden = false;
 	document.getElementById("gh-sep").hidden = false;
 }
+/* the public events feed lags by hours, so also look at my own repos' "pushed_at" (always fresh)
+   and keep whichever is newest; events still catch pushes to org repos */
 (function github(){
-	var KEY = "ayka-gh-push", cached = null;
+	var KEY = "ayka-gh-push2", cached = null;
 	try { cached = JSON.parse(sessionStorage.getItem(KEY)); } catch (e){}
 	if (cached && Date.now() - cached.t < 15 * 60000){ if (cached.ev) showGh(cached.ev); return; }
-	fetch("https://api.github.com/users/ayka-667/events/public?per_page=30").then(function(r){ return r.ok ? r.json() : []; }).then(function(list){
-		var push = (list || []).filter(function(e){ return e.type === "PushEvent"; })[0];
-		var ev = push ? { repo: push.repo.name, at: push.created_at } : null;
+	var fromEvents = fetch("https://api.github.com/users/ayka-667/events/public?per_page=30")
+		.then(function(r){ return r.ok ? r.json() : []; })
+		.then(function(list){
+			return (Array.isArray(list) ? list : []).filter(function(e){ return e.type === "PushEvent"; })
+				.map(function(e){ return { repo: e.repo.name, at: e.created_at }; });
+		}, function(){ return []; });
+	var fromRepos = cachedJSON("ayka-gh-repos", "https://api.github.com/users/ayka-667/repos?per_page=100", 30 * 60000)
+		.then(function(list){
+			return (Array.isArray(list) ? list : []).filter(function(r){ return r.pushed_at; })
+				.map(function(r){ return { repo: r.full_name, at: r.pushed_at }; });
+		}, function(){ return []; });
+	Promise.all([fromEvents, fromRepos]).then(function(all){
+		var ev = all[0].concat(all[1]).sort(function(a, b){ return Date.parse(b.at) - Date.parse(a.at); })[0] || null;
 		try { sessionStorage.setItem(KEY, JSON.stringify({ t: Date.now(), ev: ev })); } catch (e){}
 		if (ev) showGh(ev);
-	}).catch(function(){});
+	});
 })();
 
 /* cached fetch of a JSON API (sessionStorage, so a visit costs one request per API) */
@@ -2797,7 +2809,9 @@ gbForm.addEventListener("submit", function(e){
 	var name = document.getElementById("gb-name").value.trim(), msg = document.getElementById("gb-msg").value.trim();
 	if (msg.length < 2){ gbSay("write a message first", "err"); return; }
 	gbSend.disabled = true; gbSay("sending…");
-	api("/guestbook", { method: "POST", headers: { "Content-Type": "application/json" },
+	var hdr = { "Content-Type": "application/json" };
+	if (adminKey) hdr["X-Admin-Key"] = adminKey;
+	api("/guestbook", { method: "POST", headers: hdr,
 		body: JSON.stringify({ name: name, msg: msg, website: document.getElementById("gb-hp").value }) })
 		.then(function(j){
 			document.getElementById("gb-msg").value = "";

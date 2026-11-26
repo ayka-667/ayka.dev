@@ -78,6 +78,8 @@ export default {
 				try { body = await req.json(); } catch { return json({ error: "bad json" }, 400); }
 				if (body.website) return json({ ok: true }); /* honeypot: bots fill every field */
 				const name = clean(body.name, 24) || "anon";
+				const isAdmin = !!env.ADMIN_KEY && req.headers.get("X-Admin-Key") === env.ADMIN_KEY;
+				if (!isAdmin && reservedName(name)) return json({ error: "this name is reserved, pick another one" }, 400);
 				const msg = clean(body.msg, 200);
 				if (!msg || msg.length < 2) return json({ error: "message too short" }, 400);
 				if (/(https?:\/\/|www\.|discord\.gg|\.(com|net|org|io|gg|xyz|ru)\b)/i.test(name + " " + msg)) return json({ error: "no links please" }, 400);
@@ -131,6 +133,21 @@ export default {
 };
 
 /* ---------- helpers ---------- */
+
+/* names only I can use (when posting with the admin key). Checked after folding case, accents,
+   look-alike letters, leetspeak and separators, so "A y k a", "4yk4", "Аyka" (cyrillic), "steam_tools" are caught too. */
+const RESERVED = ["ayka", "steamtools", "steamtool", "yourstake", "admin", "administrator", "moderator", "owner", "staff", "official", "support"];
+const LOOKALIKE = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "у": "y", "к": "k", "х": "x", "і": "i", "ѕ": "s", "т": "t", "м": "m", "ı": "i", "ʏ": "y", "ᴀ": "a", "ᴋ": "k" };
+const LEET = { "4": "a", "@": "a", "3": "e", "1": "i", "!": "i", "|": "i", "0": "o", "5": "s", "$": "s", "7": "t", "¥": "y" };
+function foldName(s) {
+	let t = String(s).normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+	t = [...t].map((c) => LOOKALIKE[c] || LEET[c] || c).join("");
+	return t.replace(/[^a-z]/g, "").replace(/(.)\1+/g, "$1");
+}
+function reservedName(name) {
+	const f = foldName(name);
+	return RESERVED.some((r) => f.includes(r.replace(/(.)\1+/g, "$1")));
+}
 
 const BAD = /\b(n[i1]gg|f[a@]gg?ot|p[eé]d[eé]s?\b|encul[ée]|nazi|hitler|kys|kill yourself|suicide|sale (arabe|noir|juif))/i;
 
