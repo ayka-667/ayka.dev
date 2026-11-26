@@ -1626,15 +1626,22 @@ function renderPresence(){
 	if (!p) return;
 	var st = p.discord_status || "offline", html = esc(STATUS_TXT[st] || st), barHtml = "";
 	var acts = p.activities || [];
-	var game = acts.filter(function(a){ return a.type === 0; })[0];
+	var listen = acts.filter(function(a){ return a.type === 2 && !(a.name === "Spotify" && p.spotify); })[0];
+	var game = acts.filter(function(a){ return a.type !== 2 && a.type !== 4; })[0];
 	var custom = acts.filter(function(a){ return a.type === 4 && a.state; })[0];
 	if (p.listening_to_spotify && p.spotify){
 		var sp = p.spotify, ts = sp.timestamps || {};
 		var prog = ts.start && ts.end ? " " + mmss(Math.min(Date.now(), ts.end) - ts.start) + "/" + mmss(ts.end - ts.start) : "";
 		html = '<span class="spot">♫</span> ' + esc(sp.song) + ' <span class="sub">— ' + esc(sp.artist) + esc(prog) + "</span>";
 		barHtml = html;
+	} else if (listen){
+		var lt = listen.timestamps || {};
+		var lprog = lt.start && lt.end ? " " + mmss(Math.min(Date.now(), lt.end) - lt.start) + "/" + mmss(lt.end - lt.start) : "";
+		html = '<span class="spot">♫</span> ' + esc(listen.details || listen.name) +
+			(listen.state ? ' <span class="sub">— ' + esc(listen.state) + esc(lprog) + "</span>" : (lprog ? '<span class="sub">' + esc(lprog) + "</span>" : ""));
+		barHtml = html;
 	} else if (game){
-		html = '<span class="sub">playing</span> ' + esc(game.name) + (game.details ? ' <span class="sub">· ' + esc(game.details) + "</span>" : "");
+		html = '<span class="sub">' + (ACT_LBL[game.type] || "playing") + '</span> ' + esc(game.name) + (game.details ? ' <span class="sub">· ' + esc(game.details) + "</span>" : "");
 		barHtml = html;
 	} else if (custom){
 		html = esc((custom.emoji && !custom.emoji.id ? custom.emoji.name + " " : "") + custom.state);
@@ -1651,7 +1658,7 @@ function renderPresence(){
 	whoRow.hidden = false;
 	renderCard();
 }
-setInterval(function(){ if (presence && presence.listening_to_spotify) renderPresence(); }, 1000);
+setInterval(function(){ if (presence && (presence.listening_to_spotify || (presence.activities || []).some(function(a){ return a.type === 2; }))) renderPresence(); }, 1000);
 
 (function lanyard(){
 	var ws, hb = 0, retry = 2000;
@@ -1847,14 +1854,21 @@ function renderCard(){
 			if (a.type === 4) return;
 			if (a.type === 2 && a.name === "Spotify" && p.spotify) return;
 			var img = actImage(a), t = a.timestamps || {};
-			var time = t.end ? '<div class="sub js-left" data-e="' + t.end + '">' + mmss(t.end - Date.now()) + " left</div>"
+			var music = a.type === 2;
+			var time = t.start && t.end && music ? '<div class="dp-prog js-prog" data-s="' + t.start + '" data-e="' + t.end + '">' + progBar(t.start, t.end) + "</div>"
+				: t.end ? '<div class="sub js-left" data-e="' + t.end + '">' + mmss(t.end - Date.now()) + " left</div>"
 				: t.start ? '<div class="sub js-el" data-s="' + t.start + '">for ' + dur(Date.now() - t.start) + "</div>" : "";
 			blocks += '<div class="dp-act">' +
 				(img ? asciiOrImg(img, 22, 12, false, "art") : '<pre class="dp-asc art dp-ph" aria-hidden="true">┌────┐\n│ ▶  │\n└────┘</pre>') +
-				'<div class="dp-info"><div class="lbl">' + (ACT_LBL[a.type] || "") + "</div>" +
-				"<b>" + esc(a.name || "") + "</b>" +
-				(a.details ? "<div>" + esc(a.details) + "</div>" : "") +
-				(a.state ? '<div class="sub">' + esc(a.state) + "</div>" : "") +
+				(music
+					? '<div class="dp-info"><div class="lbl">listening on <span class="spot">' + esc((a.name || "").toLowerCase()) + "</span></div>" +
+						"<b>" + esc(a.details || a.name || "") + "</b>" +
+						(a.state ? "<div>by " + esc(a.state) + "</div>" : "") +
+						(a.assets && a.assets.large_text ? '<div class="sub">on ' + esc(a.assets.large_text) + "</div>" : "")
+					: '<div class="dp-info"><div class="lbl">' + (ACT_LBL[a.type] || "") + "</div>" +
+						"<b>" + esc(a.name || "") + "</b>" +
+						(a.details ? "<div>" + esc(a.details) + "</div>" : "") +
+						(a.state ? '<div class="sub">' + esc(a.state) + "</div>" : "")) +
 				time + "</div></div>";
 		});
 		if (!blocks) blocks = '<p class="sub dp-none">' + (st === "offline" ? "offline right now, leave a message." : "not doing anything in particular right now.") + "</p>";
